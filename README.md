@@ -20,11 +20,9 @@ npm install mapeo-mobile-server
 ## Usage
 
 ```js
-var db = require('hyperdb-osm')
 var mobileRouter = require('mapeo-mobile-server')
 
-var osm = db('/tmp/mapeo-mobile')
-var router = mobileRouter(osm)
+var router = mobileRouter('/path/to/directory')
 
 var http = require('http')
 var server = http.createServer(function (req, res) {
@@ -40,5 +38,5 @@ server.listen(5000)
 ### Use as Express middleware
 
 ```js
-app.use('/api', mobileRouter(osm))
+app.use('/api', mobileRouter(dir))
 ```

@@ -1,14 +1,14 @@
 var staticFiles = require('./staticFiles')
-var Api = require('mapfilter-server/src/api')
+var Api = require('./api')
 var Router = require('routes')
 
-module.exports = function (db) {
+module.exports = function (dir) {
   var router = Router()
-  var api = Api(db)
+  var api = Api(dir)
 
   router.addRoute('POST /observations', api.observationCreate.bind(api))
   router.addRoute('GET /observations', api.observationList.bind(api))
-  // router.addRoute('PUT /observation/:id', api.observationUpdate.bind(api))
+  router.addRoute('PUT /observation/:id', api.observationUpdate.bind(api))
   router.addRoute('GET /observations/:id', api.observationGet.bind(api))
   router.addRoute('GET /features', api.asFeatureCollection.bind(api))
 

@@ -1,7 +1,6 @@
 const ecstatic = require('ecstatic')
 const http = require('http')
 const url = require('url')
-const getport = require('getport')
 const fs = require('fs')
 
 module.exports = function (req, res, params, splats) {
@@ -13,7 +12,7 @@ module.exports = function (req, res, params, splats) {
     return serveStyleFile(styleFile, req, res)
   }
   ecstatic({ root: root, cors: true })(req, res)
-})
+}
 
 
 function serveStyleFile (styleFile, req, res) {
