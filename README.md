@@ -69,7 +69,7 @@ Fetch a preset with its `id`. Returns a single JSON object.
 Save a piece of media (photos only for now!) to the database. The raw media data
 should be provided. The client should set the `Content-Type` header
 appropriately (e.g. `image/jpg`) as a hint to the server, in case it has to do
-e.g. image resizing.
+any post-processing.
 
 A single JSON object is returned, with, at minimum, the `id` field set, to
 uniquely identify the uploaded media:
@@ -77,6 +77,7 @@ uniquely identify the uploaded media:
 ```json
 {
   "id": "225961fb85d82312e8c0ed511"
+  "type": "image/jpg"
 }
 ```
 
