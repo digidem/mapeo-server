@@ -3,17 +3,19 @@
 Mapeo Mobile server, used for managing observation data. It includes observation
 and media management routes and static file routes for an offline tile server.
 
+## Install
+
 ```
-npm install mapeo-mobile-server
+$ npm install mapeo-mobile-server
 ```
 
 ## Routes
 
 The following routes are available.
 
-- U: unimplemented
-- F: fixture available
-- R: implemented & ready!
+- **U**: unimplemented
+- **F**: fixture available
+- **R**: implemented & ready!
 
 ### Observations
 
@@ -117,9 +119,21 @@ device.
 ## Usage
 
 ```js
-var mobileRouter = require('mapeo-mobile-server')
+var hyperdb = require('hyperdb')
+var hosm = require('hyperdb-osm')
+var sub = require('subleveldown')
+var grid = require('grid-point-store')
+var level = require('level')
+var Router = require('mapeo-mobile-server')
 
-var router = mobileRouter('/path/to/directory')
+var db = level('./index')
+var osm = hosm({
+  hyperdb: hyperdb('./db', { valueEncoding: 'json' }),
+  index: sub(db, 'idx'),
+  pointstore: grid(sub(db, 'geo'))
+})
+
+var router = Router(osm)
 
 var http = require('http')
 var server = http.createServer(function (req, res) {
@@ -135,5 +149,5 @@ server.listen(5000)
 ### Use as Express middleware
 
 ```js
-app.use('/api', mobileRouter(dir))
+app.use('/api', Router(dir))
 ```
