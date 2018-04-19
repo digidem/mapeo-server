@@ -46,6 +46,11 @@ The object will be returned, with the fields `id` and `timestamp` set.
 
 Fetch an observation by its `id`. A single JSON object will be returned.
 
+#### [F] `PUT /observations/:id`
+
+Update an observation by its `id` by providing a JSON object. Any fields given
+will be replaced.
+
 ### Presets
 
 #### [U] `GET /presets`
