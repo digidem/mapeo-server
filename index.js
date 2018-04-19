@@ -16,7 +16,6 @@ module.exports = function (dir) {
   router.addRoute('GET /presets/:id',       api.presetsGet.bind(api))
 
   // Media
-  router.addRoute('GET /media',             api.mediaList.bind(api))
   router.addRoute('GET /media/:id',         api.mediaGet.bind(api))
   router.addRoute('PUT /media',             api.mediaPut.bind(api))
 

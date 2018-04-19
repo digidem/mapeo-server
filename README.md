@@ -133,17 +133,19 @@ var Router = require('mapeo-mobile-server')
 
 var db = level('./index')
 var osm = hosm({
-  hyperdb: hyperdb('./db', { valueEncoding: 'json' }),
+  db: hyperdb('./db', { valueEncoding: 'json' }),
   index: sub(db, 'idx'),
   pointstore: grid(sub(db, 'geo'))
 })
 
-var router = Router(osm)
+var route = Router(osm)
 
 var http = require('http')
 var server = http.createServer(function (req, res) {
-  if (router.handle(req, res)) {}
-  else {
+  var fn = route(req, res)
+  if (fn) {
+    fn()
+  } else {
     res.statusCode = 404
     res.end('not found\n')
   }
