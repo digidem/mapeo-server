@@ -12,13 +12,11 @@ var osm = hosm({
   pointstore: grid(sub(db, 'geo'))
 })
 
-var route = Router(osm)
+var route = Router(osm, './media')
 
 var http = require('http')
 var server = http.createServer(function (req, res) {
-  var fn = route(req, res)
-  if (fn) {
-    fn()
+  if (route(req, res)) {
   } else {
     res.statusCode = 404
     res.end('not found\n')

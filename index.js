@@ -1,9 +1,9 @@
 var Router = require('routes')
 var Api = require('./api')
 
-module.exports = function (dir) {
+module.exports = function (osm, mediadir) {
   var router = Router()
-  var api = Api(dir)
+  var api = Api(osm, mediadir)
 
   // Observations
   router.addRoute('GET /observations',      api.observationList.bind(api))
@@ -17,7 +17,7 @@ module.exports = function (dir) {
 
   // Media
   router.addRoute('GET /media/:id',         api.mediaGet.bind(api))
-  router.addRoute('PUT /media',             api.mediaPut.bind(api))
+  router.addRoute('POST /media',            api.mediaPost.bind(api))
 
   // Tiles
   router.addRoute('GET /tiles',             api.tilesList.bind(api))
@@ -30,10 +30,9 @@ module.exports = function (dir) {
     var m = router.match(req.method + ' ' + req.url)
     if (m) {
       m.fn(req, res, m.params)
-    }
-    else {
-      res.statusCode = 404
-      res.end('not found')
+      return true
+    } else {
+      return false
     }
   }
 }
