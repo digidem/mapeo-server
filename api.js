@@ -73,19 +73,16 @@ Api.prototype.mediaGet = function (req, res, m) {
 
 Api.prototype.mediaPost = function (req, res, m) {
   var id = randombytes(16).toString('hex')
-  console.log('incoming', id)
   var mime = req.headers['content-type']
   res.setHeader('content-type', 'application/json')
   req.pipe(this.media.createWriteStream(id))
     .once('finish', function () {
-      console.log('finish')
       res.end(JSON.stringify({id: id, type: mime}))
     })
     .once('error', function (err) {
       res.statusCode = 500
       res.end(err.toString())
     })
-  req.on('data', function (buf) { console.log('data', buf.length) })
 }
 
 
