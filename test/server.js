@@ -20,7 +20,7 @@ module.exports = function (cb) {
   var router = Router(osm, media)
 
   var server = http.createServer(function (req, res) {
-    if (route(req, res)) {
+    if (router(req, res)) {
     } else {
       res.statusCode = 404
       res.end('not found\n')
