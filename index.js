@@ -1,9 +1,9 @@
 var Router = require('routes')
 var Api = require('./api')
 
-module.exports = function (osm, mediadir) {
+module.exports = function (osm, media) {
   var router = Router()
-  var api = Api(osm, mediadir)
+  var api = Api(osm, media)
 
   // Observations
   router.addRoute('GET /observations',      api.observationList.bind(api))

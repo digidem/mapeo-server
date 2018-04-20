@@ -3,6 +3,7 @@ var hosm = require('hyperdb-osm')
 var sub = require('subleveldown')
 var grid = require('grid-point-store')
 var level = require('level')
+var blob = require('fs-blob-store')
 var Router = require('.')
 
 var db = level('./index')
@@ -11,8 +12,9 @@ var osm = hosm({
   index: sub(db, 'idx'),
   pointstore: grid(sub(db, 'geo'))
 })
+var media = blob('./media')
 
-var route = Router(osm, './media')
+var route = Router(osm, media)
 
 var http = require('http')
 var server = http.createServer(function (req, res) {

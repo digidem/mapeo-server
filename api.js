@@ -1,4 +1,3 @@
-var FsBlobStore = require('fs-blob-store')
 var fs = require('fs')
 var path = require('path')
 var url = require('url')
@@ -10,10 +9,10 @@ var randombytes = require('randombytes')
 
 module.exports = Api
 
-function Api (osm, mediadir) {
-  if (!(this instanceof Api)) return new Api(osm, mediadir)
+function Api (osm, media) {
+  if (!(this instanceof Api)) return new Api(osm, media)
   this.osm = osm
-  this.media = FsBlobStore(mediadir)
+  this.media = media
 }
 
 // Observations
