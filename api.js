@@ -55,9 +55,20 @@ Api.prototype.presetsGet = function (req, res, m) {
 
 // Media
 Api.prototype.mediaGet = function (req, res, m) {
-  var filename = m.filename
-  res.setHeader('content-type', 'application/json')
-  res.end(JSON.stringify({id: '23230', type: 'image/jpg', data: 'aGVsbG8gd29ybGQgdGhpcyBpcyBpbWFnZSBkYXRhCg==', length: 22}))
+  var self = this
+
+  this.media.exists(m.id, function (err, exists) {
+    if (err) {
+      res.statusCode = 500
+      res.end('ERROR: ' + err.toString())
+    } else if (!exists) {
+      res.statusCode = 404
+      res.end()
+    } else {
+      res.setHeader('content-type', 'image/jpeg')
+      self.media.createReadStream(m.id).pipe(res)
+    }
+  })
 }
 
 Api.prototype.mediaPost = function (req, res, m) {
