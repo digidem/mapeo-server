@@ -89,14 +89,26 @@ Api.prototype.mediaPost = function (req, res, m) {
 // Tiles
 Api.prototype.tilesList = function (req, res, m) {
   res.setHeader('content-type', 'application/json')
-  res.end(JSON.stringify(['oakland']))
+  fs.readdir(path.join(__dirname, 'tiles'), function (err, files) {
+    if (err) {
+      res.statusCode = 500
+      res.end(e.toString())
+      return
+    }
+    files = files
+      .filter(function (file) { return file.endsWith('.asar') })
+      .map(function (file) { return path.parse(file).name })
+    res.end(JSON.stringify(files))
+  })
 }
 
 Api.prototype.tilesGet = function (req, res, m) {
-  var metadataBuf = asarGet(m.id + '.asar', 'meta.json')
+  var asarPath = path.join('tiles', m.id + '.asar')
+
+  var metadataBuf = asarGet(asarPath, 'meta.json')
   if (!metadataBuf) {
     res.statusCode = 500
-    res.end()
+    res.end('failed to find meta.json')
     return
   }
 
@@ -105,18 +117,18 @@ Api.prototype.tilesGet = function (req, res, m) {
     meta = JSON.parse(metadataBuf.toString())
   } catch (e) {
     res.statusCode = 500
-    res.end('failed to parse tileset metadata.json')
+    res.end('failed to parse tileset meta.json')
     return
   }
 
   if (!meta.ext || !meta.mime) {
     res.statusCode = 500
-    res.end('metadata.json missing required fields')
+    res.end('meta.json missing required fields')
     return
   }
 
   var filename = [m.z, m.y, m.x].join('/') + '.' + meta.ext
-  var buf = asarGet(m.id + '.asar', filename)
+  var buf = asarGet(asarPath, filename)
 
   if (buf) {
     res.setHeader('content-type', meta.mime)
