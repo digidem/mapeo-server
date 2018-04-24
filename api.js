@@ -76,7 +76,7 @@ Api.prototype.mediaPost = function (req, res, m) {
   res.setHeader('content-type', 'application/json')
   req.pipe(this.media.createWriteStream(id))
     .once('finish', function () {
-      res.end(JSON.stringify({id: id, type: mime}))
+      res.end(JSON.stringify({id: id}))
     })
     .once('error', function (err) {
       res.statusCode = 500
