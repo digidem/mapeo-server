@@ -30,7 +30,7 @@ test('observations: create', function (t) {
       t.end()
     }))
 
-    hq.end(JSON.stringify({lat: 5, lon: -0.123}))
+    hq.end(JSON.stringify({lat: 5, lon: -0.123, type: 'observation'}))
   })
 })
 
@@ -55,13 +55,14 @@ test('observations: create invalid', function (t) {
 
 test('observations: create + get', function (t) {
   createServer(function (server, base, osm, media) {
-    osm.create({lat:1,lon:2}, function (err, id, node) {
+    osm.create({lat:1,lon:2,type:'observation'}, function (err, id, node) {
       t.error(err)
 
       var expected = {
         lat: 1,
         lon: 2,
         id: id,
+        type: 'observation',
         version: node.key
       }
 

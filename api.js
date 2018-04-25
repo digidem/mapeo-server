@@ -54,6 +54,9 @@ Api.prototype.observationCreate = function (req, res, m) {
       res.end('observation must have "lat" and "lon" fields')
       return
     }
+
+    obs.type = 'observation'
+
     self.osm.create(obs, function (err, _, node) {
       if (err) {
         res.statusCode = 500
