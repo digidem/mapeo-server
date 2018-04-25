@@ -124,20 +124,11 @@ device.
 ## Usage
 
 ```js
-var hyperdb = require('hyperdb')
-var hosm = require('hyperdb-osm')
-var sub = require('subleveldown')
-var grid = require('grid-point-store')
-var level = require('level')
+var Osm = require('osm-p2p')
 var blobstore = require('fs-blob-store')
 var Router = require('mapeo-mobile-server')
 
-var db = level('./index')
-var osm = hosm({
-  db: hyperdb('./db', { valueEncoding: 'json' }),
-  index: sub(db, 'idx'),
-  pointstore: grid(sub(db, 'geo'))
-})
+var osm = Osm('./db')
 var media = blobstore('./media')
 
 var route = Router(osm, media)

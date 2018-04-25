@@ -30,14 +30,11 @@
   "devDependencies": {
     "abstract-blob-store": "^3.3.4",
     "concat-stream": "^1.6.2",
-    "grid-point-store": "^2.1.1",
-    "hyperdb": "^2.1.1",
-    "hyperdb-osm": "^4.4.1",
     "hyperquest": "^2.1.3",
     "memdb": "^1.3.1",
-    "random-access-memory": "^2.4.0",
+    "osm-p2p": "^2.0.0",
+    "osm-p2p-mem": "^1.0.0",
     "standard": "^11.0.1",
-    "subleveldown": "^2.1.0",
     "tape": "^4.9.0"
   }
 }
