@@ -21,7 +21,7 @@ module.exports = function (osm, media) {
 
   // Tiles
   router.addRoute('GET /tiles',             api.tilesList.bind(api))
-  router.addRoute('GET /tiles/:id/:x/:y/:z',api.tilesGet.bind(api))
+  router.addRoute('GET /tiles/:id/:z/:y/:x',api.tilesGet.bind(api))
 
   // Sync
   router.addRoute('GET /sync/adb',          api.syncAdb.bind(api))

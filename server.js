@@ -6,7 +6,7 @@ var level = require('level')
 var blob = require('fs-blob-store')
 var Router = require('.')
 
-var db = level('./index')
+var db = level('./idx')
 var osm = hosm({
   db: hyperdb('./db', { valueEncoding: 'json' }),
   index: sub(db, 'idx'),

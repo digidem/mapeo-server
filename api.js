@@ -6,6 +6,7 @@ var JSONStream = require('JSONStream')
 var pump = require('pump')
 var ndjson = require('ndjson')
 var randombytes = require('randombytes')
+var asar = require('asar')
 
 module.exports = Api
 
@@ -88,12 +89,54 @@ Api.prototype.mediaPost = function (req, res, m) {
 // Tiles
 Api.prototype.tilesList = function (req, res, m) {
   res.setHeader('content-type', 'application/json')
-  res.end(JSON.stringify(['guyana_base','guyana_oil_blocks']))
+  fs.readdir(path.join(__dirname, 'tiles'), function (err, files) {
+    if (err) {
+      res.statusCode = 500
+      res.end(e.toString())
+      return
+    }
+    files = files
+      .filter(function (file) { return file.endsWith('.asar') })
+      .map(function (file) { return path.parse(file).name })
+    res.end(JSON.stringify(files))
+  })
 }
 
 Api.prototype.tilesGet = function (req, res, m) {
-  res.setHeader('content-type', 'application/vnd.mapbox-vector-tile')
-  res.end(Buffer.alloc(12))
+  var asarPath = path.join('tiles', m.id + '.asar')
+
+  var metadataBuf = asarGet(asarPath, 'meta.json')
+  if (!metadataBuf) {
+    res.statusCode = 500
+    res.end('failed to find meta.json')
+    return
+  }
+
+  var meta
+  try {
+    meta = JSON.parse(metadataBuf.toString())
+  } catch (e) {
+    res.statusCode = 500
+    res.end('failed to parse tileset meta.json')
+    return
+  }
+
+  if (!meta.ext || !meta.mime) {
+    res.statusCode = 500
+    res.end('meta.json missing required fields')
+    return
+  }
+
+  var filename = [m.z, m.y, m.x].join('/') + '.' + meta.ext
+  var buf = asarGet(asarPath, filename)
+
+  if (buf) {
+    res.setHeader('content-type', meta.mime)
+    res.end(buf)
+  } else {
+    res.statusCode = 404
+    res.end()
+  }
 }
 
 
@@ -101,4 +144,12 @@ Api.prototype.tilesGet = function (req, res, m) {
 Api.prototype.syncAdb = function (req, res, m) {
   // 200 OK
   res.end()
+}
+
+function asarGet (archive, fn) {
+  try {
+    return asar.extractFile(archive, fn)
+  } catch (e) {
+    return undefined
+  }
 }
