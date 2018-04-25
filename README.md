@@ -44,7 +44,10 @@ The object will be returned, with the fields `id` and `timestamp` set.
 
 #### [F] `GET /observations/:id`
 
-Fetch an observation by its `id`. A single JSON object will be returned.
+Fetch an observation by its `id`. An array of JSON objects will be returned.
+Usually there will only be one result, but in forking situations (e.g. two
+devices create offline edits of the same observation then sync) there can be
+multiple results.
 
 #### [F] `PUT /observations/:id`
 

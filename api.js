@@ -23,8 +23,21 @@ Api.prototype.observationList = function (req, res, m) {
 }
 
 Api.prototype.observationGet = function (req, res, m) {
-  res.setHeader('content-type', 'application/json')
-  res.end(JSON.stringify({ id: '123', lat: 12.3, lon: -0.522 }))
+  this.osm.get(m.id, function (err, obses) {
+    if (err) {
+      res.statusCode = 500
+      res.end('failed to create observation: ' + err.toString())
+      return
+    }
+    res.setHeader('content-type', 'application/json')
+    obses = Object.keys(obses).map(function (version) {
+      var obs = obses[version]
+      obs.id = m.id
+      obs.version = version
+      return obs
+    })
+    res.end(JSON.stringify(obses))
+  })
 }
 
 Api.prototype.observationCreate = function (req, res, m) {
