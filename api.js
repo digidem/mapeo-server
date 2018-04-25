@@ -90,6 +90,7 @@ Api.prototype.observationCreate = function (req, res, m) {
   })
 }
 
+// TODO: is this needed for v1?
 Api.prototype.observationUpdate = function (req, res, m) {
   // TODO: parse object, append id that was given
   res.setHeader('content-type', 'application/json')
