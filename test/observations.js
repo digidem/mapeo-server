@@ -23,6 +23,7 @@ test('observations: create', function (t) {
         var obj = JSON.parse(body)
         t.ok(obj.id, 'id field set')
         t.ok(obj.version, 'version field set')
+        t.ok(obj.created_at_timestamp, 'created_at_timestamp field set')
       } catch (e) {
         t.error(e, 'json parsing exception!')
       }

@@ -74,6 +74,7 @@ Api.prototype.observationCreate = function (req, res, m) {
     }
 
     obs.type = 'observation'
+    obs.created_at_timestamp = (new Date().getTime())
 
     self.osm.create(obs, function (err, _, node) {
       if (err) {
