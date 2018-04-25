@@ -18,8 +18,26 @@ function Api (osm, media) {
 
 // Observations
 Api.prototype.observationList = function (req, res, m) {
-  res.setHeader('content-type', 'application/json')
-  res.end(JSON.stringify([{ id: '123', lat: 12.3, lon: -0.522 }]))
+  var results = []
+
+  this.osm.kv.createReadStream()
+    .on('data', function (row) {
+      Object.keys(row.values).forEach(function (version) {
+        var obs = row.values[version].value
+        if (obs.type !== 'observation') return
+        obs.id = row.key
+        obs.version = version
+        results.push(obs)
+      })
+    })
+    .once('end', function () {
+      res.setHeader('content-type', 'application/json')
+      res.end(JSON.stringify(results))
+    })
+    .once('error', function (err) {
+      res.statusCode = 500
+      res.end('server error while getting observations: ' + err.toString())
+    })
 }
 
 Api.prototype.observationGet = function (req, res, m) {
