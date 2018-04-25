@@ -28,9 +28,31 @@ Api.prototype.observationGet = function (req, res, m) {
 }
 
 Api.prototype.observationCreate = function (req, res, m) {
-  // TODO: parse body, generate random id and return
-  res.setHeader('content-type', 'application/json')
-  res.end(JSON.stringify({ id: '123', lat: 12.3, lon: -0.522 }))
+  var self = this
+
+  body(req, function (err, obs) {
+    if (err) {
+      res.statusCode = 400
+      res.end('couldnt parse body json: ' + err.toString())
+      return
+    }
+    if (obs.lat === undefined || obs.lon === undefined) {
+      res.statusCode = 400
+      res.end('observation must have "lat" and "lon" fields')
+      return
+    }
+    self.osm.create(obs, function (err, _, node) {
+      if (err) {
+        res.statusCode = 500
+        res.end('failed to create observation: ' + err.toString())
+        return
+      }
+      res.setHeader('content-type', 'application/json')
+      obs.id = node.value.k
+      obs.version = node.key
+      res.end(JSON.stringify(obs))
+    })
+  })
 }
 
 Api.prototype.observationUpdate = function (req, res, m) {
