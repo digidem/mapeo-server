@@ -4,7 +4,6 @@ var http = require('http')
 var Router = require('..')
 
 module.exports = function (cb) {
-  var db = memdb()
   var osm = Osm()
   var media = blob()
 
