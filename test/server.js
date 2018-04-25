@@ -17,6 +17,6 @@ module.exports = function (cb) {
     }
   })
   server.listen(5000, function () {
-    cb(server, 'http://localhost:5000')
+    cb(server, 'http://localhost:5000', osm, media)
   })
 }
