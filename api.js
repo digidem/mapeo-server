@@ -18,21 +18,79 @@ function Api (osm, media) {
 
 // Observations
 Api.prototype.observationList = function (req, res, m) {
-  res.setHeader('content-type', 'application/json')
-  res.end(JSON.stringify([{ id: '123', lat: 12.3, lon: -0.522 }]))
+  var results = []
+
+  this.osm.kv.createReadStream()
+    .on('data', function (row) {
+      Object.keys(row.values).forEach(function (version) {
+        var obs = row.values[version].value
+        if (obs.type !== 'observation') return
+        obs.id = row.key
+        obs.version = version
+        results.push(obs)
+      })
+    })
+    .once('end', function () {
+      res.setHeader('content-type', 'application/json')
+      res.end(JSON.stringify(results))
+    })
+    .once('error', function (err) {
+      res.statusCode = 500
+      res.end('server error while getting observations: ' + err.toString())
+    })
 }
 
 Api.prototype.observationGet = function (req, res, m) {
-  res.setHeader('content-type', 'application/json')
-  res.end(JSON.stringify({ id: '123', lat: 12.3, lon: -0.522 }))
+  this.osm.get(m.id, function (err, obses) {
+    if (err) {
+      res.statusCode = 500
+      res.end('failed to create observation: ' + err.toString())
+      return
+    }
+    res.setHeader('content-type', 'application/json')
+    obses = Object.keys(obses).map(function (version) {
+      var obs = obses[version]
+      obs.id = m.id
+      obs.version = version
+      return obs
+    })
+    res.end(JSON.stringify(obses))
+  })
 }
 
 Api.prototype.observationCreate = function (req, res, m) {
-  // TODO: parse body, generate random id and return
-  res.setHeader('content-type', 'application/json')
-  res.end(JSON.stringify({ id: '123', lat: 12.3, lon: -0.522 }))
+  var self = this
+
+  body(req, function (err, obs) {
+    if (err) {
+      res.statusCode = 400
+      res.end('couldnt parse body json: ' + err.toString())
+      return
+    }
+    if (obs.lat === undefined || obs.lon === undefined) {
+      res.statusCode = 400
+      res.end('observation must have "lat" and "lon" fields')
+      return
+    }
+
+    obs.type = 'observation'
+    obs.created_at_timestamp = (new Date().getTime())
+
+    self.osm.create(obs, function (err, _, node) {
+      if (err) {
+        res.statusCode = 500
+        res.end('failed to create observation: ' + err.toString())
+        return
+      }
+      res.setHeader('content-type', 'application/json')
+      obs.id = node.value.k
+      obs.version = node.key
+      res.end(JSON.stringify(obs))
+    })
+  })
 }
 
+// TODO: is this needed for v1?
 Api.prototype.observationUpdate = function (req, res, m) {
   // TODO: parse object, append id that was given
   res.setHeader('content-type', 'application/json')

@@ -1,20 +1,10 @@
-var hyperdb = require('hyperdb')
-var hosm = require('hyperdb-osm')
-var sub = require('subleveldown')
-var grid = require('grid-point-store')
-var memdb = require('memdb')
-var ram = require('random-access-memory')
+var Osm = require('osm-p2p-mem')
 var blob = require('abstract-blob-store')
 var http = require('http')
 var Router = require('..')
 
 module.exports = function (cb) {
-  var db = memdb()
-  var osm = hosm({
-    db: hyperdb(ram, { valueEncoding: 'json' }),
-    index: sub(db, 'idx'),
-    pointstore: grid(sub(db, 'geo'))
-  })
+  var osm = Osm()
   var media = blob()
 
   var router = Router(osm, media)
@@ -27,6 +17,6 @@ module.exports = function (cb) {
     }
   })
   server.listen(5000, function () {
-    cb(server, 'http://localhost:5000')
+    cb(server, 'http://localhost:5000', osm, media)
   })
 }
