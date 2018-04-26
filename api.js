@@ -155,8 +155,27 @@ Api.prototype.tilesList = function (req, res, m) {
       return
     }
     // files = files
-    //   .filter(function (file) { return file.endsWith('.asar') })
-    //   .map(function (file) { return path.parse(file).name })
+    //   .filter(function (file) {
+    //     var stat = fs.statSync(file)
+    //     return stat.isDirectory() && fs.existsSync(path.join(file, 'style.json'))
+    //   })
+    //   .map(function (dir) {
+    //     var str = fs.readFileSync(path.join(file, 'style.json'), 'utf-8')
+    //     if (str) {
+    //       try {
+    //         var json = JSON.parse(str)
+    //         return {
+    //           name: json.name,
+    //           description: json.description,
+    //         }
+    //       } catch (e) {
+    //         return null
+    //       }
+    //     } else {
+    //       return null
+    //     }
+    //   })
+    //   .filter(Boolean)
     res.end(JSON.stringify(files))
   })
 }
