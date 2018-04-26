@@ -8,10 +8,5 @@ var media = blobstore('./media')
 var route = Router(osm, media)
 
 var http = require('http')
-var server = http.createServer(function (req, res) {
-  if (!route(req, res)) {
-    res.statusCode = 404
-    res.end('not found\n')
-  }
-})
+var server = http.createServer(route)
 server.listen(5000)

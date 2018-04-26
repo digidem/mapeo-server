@@ -1,5 +1,8 @@
 var Router = require('routes')
 var Api = require('./api')
+var url = require('url')
+var fs = require('fs')
+var ecstatic = require('ecstatic')
 
 module.exports = function (osm, media) {
   var router = Router()
@@ -28,11 +31,33 @@ module.exports = function (osm, media) {
 
   return function (req, res) {
     var m = router.match(req.method + ' ' + req.url)
-    if (m) {
+
+    if (url.parse(req.url).pathname === '/sat-style/style.json') {
+      serveStyleFile('sat-style/style.json', req, res)
+    } else if (m) {
       m.fn(req, res, m.params)
-      return true
     } else {
-      return false
+      ecstatic({
+        root: __dirname,
+        handleError: false,
+      })(req, res)
     }
   }
+}
+
+function serveStyleFile (styleFile, req, res) {
+  fs.stat(styleFile, function (err, stat) {
+    if (err) console.error(err)
+    fs.readFile(styleFile, 'utf8', function (err, data) {
+      if (err) console.error(err)
+      data = Buffer.from(data.replace(/\{host\}/gm, 'http://' + req.headers.host + '/sat-style'))
+      res.setHeader('content-type', 'application/json; charset=utf-8')
+      res.setHeader('last-modified', (new Date(stat.mtime)).toUTCString())
+      res.setHeader('content-length', data.length)
+      res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type, If-Match, If-Modified-Since, If-None-Match, If-Unmodified-Since')
+      res.setHeader('Access-Control-Allow-Origin', '*')
+      res.statusCode = 200
+      res.end(data)
+    })
+  })
 }
