@@ -7,6 +7,7 @@ var pump = require('pump')
 var ndjson = require('ndjson')
 var randombytes = require('randombytes')
 var asar = require('asar')
+var ecstatic = require('ecstatic')
 
 module.exports = Api
 
@@ -153,43 +154,40 @@ Api.prototype.tilesList = function (req, res, m) {
       res.end(e.toString())
       return
     }
-    files = files
-      .filter(function (file) { return file.endsWith('.asar') })
-      .map(function (file) { return path.parse(file).name })
+    // files = files
+    //   .filter(function (file) { return file.endsWith('.asar') })
+    //   .map(function (file) { return path.parse(file).name })
     res.end(JSON.stringify(files))
   })
 }
 
+Api.prototype.tilesGetStyle = function (req, res, m) {
+  serveStyleFile(path.join('tiles', m.id, 'style.json'), m.id, req, res)
+}
+
+Api.prototype.tilesGetStatic = function (req, res, m) {
+  var pathname = url.parse(req.url).pathname
+  console.log('static', pathname, __dirname)
+
+  ecstatic({
+    root: __dirname,
+    handleError: false,
+  })(req, res)
+}
+
 Api.prototype.tilesGet = function (req, res, m) {
-  var asarPath = path.join('tiles', m.id + '.asar')
+  var asarPath = path.join('tiles', m.id, 'tiles', m.tileid + '.asar')
 
-  var metadataBuf = asarGet(asarPath, 'meta.json')
-  if (!metadataBuf) {
-    res.statusCode = 500
-    res.end('failed to find meta.json')
-    return
-  }
-
-  var meta
-  try {
-    meta = JSON.parse(metadataBuf.toString())
-  } catch (e) {
-    res.statusCode = 500
-    res.end('failed to parse tileset meta.json')
-    return
-  }
-
-  if (!meta.ext || !meta.mime) {
-    res.statusCode = 500
-    res.end('meta.json missing required fields')
-    return
-  }
-
-  var filename = [m.z, m.y, m.x].join('/') + '.' + meta.ext
+  var filename = [m.z, m.y, m.x].join('/') + '.' + m.ext
   var buf = asarGet(asarPath, filename)
 
   if (buf) {
-    res.setHeader('content-type', meta.mime)
+    var mime
+    switch (m.ext) {
+      case 'png': mime = 'image/png'; break
+      case 'jpg': mime = 'image/jpg'; break
+    }
+    if (mime) res.setHeader('content-type', mime)
     res.end(buf)
   } else {
     res.statusCode = 404
@@ -210,4 +208,21 @@ function asarGet (archive, fn) {
   } catch (e) {
     return undefined
   }
+}
+
+function serveStyleFile (styleFile, id, req, res) {
+  fs.stat(styleFile, function (err, stat) {
+    if (err) console.error(err)
+    fs.readFile(styleFile, 'utf8', function (err, data) {
+      if (err) console.error(err)
+      data = Buffer.from(data.replace(/\{host\}/gm, 'http://' + req.headers.host + '/tiles/' + id))
+      res.setHeader('content-type', 'application/json; charset=utf-8')
+      res.setHeader('last-modified', (new Date(stat.mtime)).toUTCString())
+      res.setHeader('content-length', data.length)
+      res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type, If-Match, If-Modified-Since, If-None-Match, If-Unmodified-Since')
+      res.setHeader('Access-Control-Allow-Origin', '*')
+      res.statusCode = 200
+      res.end(data)
+    })
+  })
 }

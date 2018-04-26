@@ -7,6 +7,16 @@ var media = blobstore('./media')
 
 var route = Router(osm, media)
 
+var ecstatic = require('ecstatic')
+
 var http = require('http')
-var server = http.createServer(route)
+var server = http.createServer(function (req, res) {
+  if (req.url === '/') {
+    return ecstatic({root:__dirname})(req, res)
+  }
+  if (!route(req, res)) {
+    res.statusCode = 404
+    res.end('not found\n')
+  }
+})
 server.listen(5000)
