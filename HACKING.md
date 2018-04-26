@@ -2,40 +2,77 @@
 
 Some notes for anyone working on or with mapeo-mobile-server.
 
-## Tilesets
+## Vector & Raster Tiles
 
-Raster and vector tiles are currently stored in the `tiles/` directory as
-[asar](https://github.com/electron/asar) archives, with the structure
+The server is designed to work with Mapbox. All tilesets are in the `tiles/`
+directory. Each directory looks like the following:
 
 ```
-/
+tiles/streets-sat-style/
+├── fonts
+│   ├── DIN Offc Pro Bold,Arial Unicode MS Bold
+│   │   └── 0-255.pbf
+│   ├── DIN Offc Pro Bold,Arial Unicode MS Regular
+│   │   └── 0-255.pbf
+│   ├── DIN Offc Pro Italic,Arial Unicode MS Regular
+│   │   └── 0-255.pbf
+│   ├── DIN Offc Pro Medium,Arial Unicode MS Regular
+│   │   └── 0-255.pbf
+│   ├── DIN Offc Pro Medium Italic,Arial Unicode MS Regular
+│   │   └── 0-255.pbf
+│   └── DIN Offc Pro Regular,Arial Unicode MS Regular
+│       └── 0-255.pbf
+├── sprites
+│   ├── sprite@2x.json
+│   ├── sprite@2x.png
+│   ├── sprite.json
+│   └── sprite.png
+├── style.json
+└── tiles
+    ├── mapbox.mapbox-streets-v7.asar
+    └── mapbox.satellite.asar
+```
+
+This is the standard mapbox layout, with the exception of the tiles themselves,
+which are stored as [asar](https://github.com/electron/asar) archives. Each has
+the structure
+
+```
+mapbox.mapbox-streets-v7.asar
+├── 10
+│   └── 164
+│       └── 395.vector.pbf
+├── 11
+│   ├── 328
+│   │   └── 791.vector.pbf
+│   └── 329
+│       └── 791.vector.pbf
 ├── 12
-│   ├── 1581
-│   │   ├── 655.png
-│   │   ├── 656.png
-│   │   ├── 657.png
-│   │   └── 658.png
-├── 15
-│   └── 5258
-│       └── 12660.png
-└── meta.json
+│   ├── 656
+│   │   ├── 1582.vector.pbf
+│   │   └── 1583.vector.pbf
+│   ├── 657
+│   │   ├── 1582.vector.pbf
+│   │   └── 1583.vector.pbf
+│   └── 658
+│       ├── 1582.vector.pbf
+│       └── 1583.vector.pbf
+├── 6
+│   └── 10
+│       └── 24.vector.pbf
+├── 7
+│   └── 20
+│       └── 49.vector.pbf
+├── 8
+│   └── 41
+│       └── 98.vector.pbf
+├── 9
+│   └── 82
+│       └── 197.vector.pbf
 ```
 
 The top-level directory is filled with Z coordinates, followed by Y coordinates,
 and finally `X.ext` files at the leaves.
-
-The special file `meta.json` is *required*. It must contain a minimum of
-
-```
-{
-  "ext": "png",
-  "mime": "image/png"
-}
-```
-
-`ext` is to help the server figure out what extension to look for in the asar
-archive, and `mime` is to help the server decide what MIME type to send in its
-HTTP responses when serving the tiles.
 
 If you have a directory with the Z dirs and a meta.json file assembled in a
 directory called `dir`, you could create an asar archive for it by running
@@ -43,7 +80,10 @@ directory called `dir`, you could create an asar archive for it by running
 ```
 $ npm install --global asar
 
-$ asar pack dir/ oakland.asar
+$ cd tiles/TILESET/tiles/FOO
+
+$ asar pack FOO/ FOO.asar
 ```
 
-By default, the server looks for tiles in the `tiles/` directory.
+By default, the server looks for `style.json` files in the subdirectories of the
+`tiles/` directory.
