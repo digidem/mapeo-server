@@ -160,7 +160,6 @@ Api.prototype.tilesList = function (req, res, m) {
         return stat.isDirectory() && fs.existsSync(path.join('tiles', file, 'style.json'))
       })
       .map(function (dir) {
-        console.log('map', dir)
         var str = fs.readFileSync(path.join('tiles', dir, 'style.json'), 'utf-8')
         if (str) {
           try {
@@ -194,7 +193,6 @@ Api.prototype.tilesGetStyle = function (req, res, m) {
 
 Api.prototype.tilesGetStatic = function (req, res, m) {
   var pathname = url.parse(req.url).pathname
-  console.log('static', pathname, __dirname)
 
   ecstatic({
     root: __dirname,
@@ -239,9 +237,17 @@ function asarGet (archive, fn) {
 
 function serveStyleFile (styleFile, id, req, res) {
   fs.stat(styleFile, function (err, stat) {
-    if (err) console.error(err)
+    if (err) {
+      res.statusCode = 500
+      res.end(err.toString())
+      return
+    }
     fs.readFile(styleFile, 'utf8', function (err, data) {
-      if (err) console.error(err)
+      if (err) {
+        res.statusCode = 500
+        res.end(err.toString())
+        return
+      }
       data = Buffer.from(data.replace(/\{host\}/gm, 'http://' + req.headers.host + '/tiles/' + id))
       res.setHeader('content-type', 'application/json; charset=utf-8')
       res.setHeader('last-modified', (new Date(stat.mtime)).toUTCString())
