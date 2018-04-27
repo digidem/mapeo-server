@@ -168,9 +168,9 @@ Api.prototype.tilesList = function (req, res, m) {
             var src = json.sources[srcTop]
             if (!src) return null
             return {
-              id: src.id,
-              name: src.name,
-              description: src.description,
+              id: json.id,
+              name: json.name,
+              description: json.description,
               bounds: src.bounds,
               minzoom: src.minzoom,
               maxzoom: src.maxzoom
