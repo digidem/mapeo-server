@@ -151,7 +151,7 @@ Api.prototype.tilesList = function (req, res, m) {
   fs.readdir(path.join(__dirname, 'tiles'), function (err, files) {
     if (err) {
       res.statusCode = 500
-      res.end(e.toString())
+      res.end(err.toString())
       return
     }
     // files = files
