@@ -97,18 +97,26 @@ Retrieve a piece of media (photos only for now) by its `id`.
 
 ### Vector Tiles
 
-#### [U] `GET /tiles`
+#### [U] `GET /styles`
 
 Returns a JSON array with the names of all available vector tilesets. E.g.
 
 ```json
 [
-  "guyana_base",
-  "guyana_overlay"
+  {
+    id: 'satellite-v9',
+    name: 'Satellite',
+    bounds: [ -122.339973, 37.742214, -122.150116, 37.856694 ],
+    minzoom: 0, maxzoom: 22
+  }
 ]
 ```
 
-#### [U] `GET /tiles/:id/:x/:y/:z`
+#### [U] `GET /styles/:id/style.json`
+
+Retrieve the `style.json` file for a given style.
+
+#### [U] `GET /styles/:id/tiles/:x/:y/:z.:ext`
 
 Fetch a single vector tile from the tileset `id` by an `x`,`y`,`z` coordinate.
 

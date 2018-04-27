@@ -5,7 +5,7 @@ var concat = require('concat-stream')
 
 test('tiles: list', function (t) {
   createServer(function (server, base) {
-    var href = base + '/tiles'
+    var href = base + '/styles'
 
     var hq = hyperquest.get(href, {})
 
@@ -20,15 +20,13 @@ test('tiles: list', function (t) {
       try {
         var obj = JSON.parse(body)
         var expected = [
-          { id: 'mapbox.satellite',
-            name: 'Mapbox Satellite',
-            description: '',
+          { id: 'satellite-v9',
+            name: 'Satellite',
             bounds: [ -122.339973, 37.742214, -122.150116, 37.856694 ],
             minzoom: 0, maxzoom: 22
           },
-          { id: 'mapbox.mapbox-streets-v7',
-            name: 'Mapbox Streets v7',
-            description: '',
+          { id: 'satellite-streets-v9',
+            name: 'Mapbox Satellite Streets',
             bounds: [ -122.339973, 37.742214, -122.150116, 37.856694 ],
             minzoom: 0, maxzoom: 16
           }
@@ -45,7 +43,7 @@ test('tiles: list', function (t) {
 
 test('tiles: get', function (t) {
   createServer(function (server, base) {
-    var href = base + '/tiles/sat-style/tiles/mapbox.satellite/6/10/24.png'
+    var href = base + '/styles/sat-style/tiles/mapbox.satellite/6/10/24.png'
     var hq = hyperquest.get(href)
     hq.once('response', function (res) {
       t.equal(res.statusCode, 200, 'get 200 ok')
