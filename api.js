@@ -154,28 +154,36 @@ Api.prototype.tilesList = function (req, res, m) {
       res.end(err.toString())
       return
     }
-    // files = files
-    //   .filter(function (file) {
-    //     var stat = fs.statSync(file)
-    //     return stat.isDirectory() && fs.existsSync(path.join(file, 'style.json'))
-    //   })
-    //   .map(function (dir) {
-    //     var str = fs.readFileSync(path.join(file, 'style.json'), 'utf-8')
-    //     if (str) {
-    //       try {
-    //         var json = JSON.parse(str)
-    //         return {
-    //           name: json.name,
-    //           description: json.description,
-    //         }
-    //       } catch (e) {
-    //         return null
-    //       }
-    //     } else {
-    //       return null
-    //     }
-    //   })
-    //   .filter(Boolean)
+    files = files
+      .filter(function (file) {
+        var stat = fs.statSync(path.join('tiles', file))
+        return stat.isDirectory() && fs.existsSync(path.join('tiles', file, 'style.json'))
+      })
+      .map(function (dir) {
+        console.log('map', dir)
+        var str = fs.readFileSync(path.join('tiles', dir, 'style.json'), 'utf-8')
+        if (str) {
+          try {
+            var json = JSON.parse(str)
+            var srcTop = Object.keys(json.sources)[0] || {}
+            var src = json.sources[srcTop]
+            if (!src) return null
+            return {
+              id: src.id,
+              name: src.name,
+              description: src.description,
+              bounds: src.bounds,
+              minzoom: src.minzoom,
+              maxzoom: src.maxzoom
+            }
+          } catch (e) {
+            return null
+          }
+        } else {
+          return null
+        }
+      })
+      .filter(Boolean)
     res.end(JSON.stringify(files))
   })
 }

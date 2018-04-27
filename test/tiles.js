@@ -19,7 +19,21 @@ test('tiles: list', function (t) {
     hq.pipe(concat({ encoding: 'string' }, function (body) {
       try {
         var obj = JSON.parse(body)
-        t.deepEquals(obj.sort(), ['sat-style', 'streets-sat-style'])
+        var expected = [
+          { id: 'mapbox.satellite',
+            name: 'Mapbox Satellite',
+            description: '',
+            bounds: [ -122.339973, 37.742214, -122.150116, 37.856694 ],
+            minzoom: 0, maxzoom: 22
+          },
+          { id: 'mapbox.mapbox-streets-v7',
+            name: 'Mapbox Streets v7',
+            description: '',
+            bounds: [ -122.339973, 37.742214, -122.150116, 37.856694 ],
+            minzoom: 0, maxzoom: 16
+          }
+        ]
+        t.deepEquals(obj, expected)
       } catch (e) {
         t.error(e, 'json parsing exception!')
       }
