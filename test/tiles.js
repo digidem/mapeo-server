@@ -19,7 +19,7 @@ test('tiles: list', function (t) {
     hq.pipe(concat({ encoding: 'string' }, function (body) {
       try {
         var obj = JSON.parse(body)
-        t.deepEquals(obj, ['oakland'])
+        t.deepEquals(obj.sort(), ['sat-style', 'streets-sat-style'])
       } catch (e) {
         t.error(e, 'json parsing exception!')
       }
@@ -31,14 +31,14 @@ test('tiles: list', function (t) {
 
 test('tiles: get', function (t) {
   createServer(function (server, base) {
-    var href = base + '/tiles/oakland/12/1583/655'
+    var href = base + '/tiles/sat-style/tiles/mapbox.satellite/6/10/24.png'
     var hq = hyperquest.get(href)
     hq.once('response', function (res) {
       t.equal(res.statusCode, 200, 'get 200 ok')
       t.equal(res.headers['content-type'], 'image/png', 'type correct')
 
       hq.pipe(concat(function (body) {
-        t.equals(body.length, 50434, 'correct file length')
+        t.equals(body.length, 21014, 'correct file length')
         server.close()
         t.end()
       }))
