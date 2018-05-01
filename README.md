@@ -38,7 +38,7 @@ observation. The following fields are required:
 
 The object will be returned, with the fields `id` and `timestamp` set.
 
-#### [F] `GET /observations/:id`
+#### `GET /observations/:id`
 
 Fetch an observation by its `id`. An array of JSON objects will be returned.
 Usually there will only be one result, but in forking situations (e.g. two
@@ -82,7 +82,7 @@ uniquely identify the uploaded media:
 
 ```json
 {
-  "id": "225961fb85d82312e8c0ed511"
+  "id": "225961fb85d82312e8c0ed511",
   "type": "image/jpg"
 }
 ```
@@ -97,7 +97,7 @@ Retrieve a piece of media (photos only for now) by its `id`.
 
 Returns a JSON array with the names of all available vector tilesets. E.g.
 
-```json
+```js
 [
   {
     id: 'satellite-v9',
