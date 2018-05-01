@@ -3,7 +3,7 @@ var hyperquest = require('hyperquest')
 var createServer = require('./server')
 var concat = require('concat-stream')
 
-test('tiles: list', function (t) {
+test('styles: list', function (t) {
   createServer(function (server, base) {
     var href = base + '/styles'
 
@@ -41,7 +41,7 @@ test('tiles: list', function (t) {
   })
 })
 
-test('tiles: get', function (t) {
+test('styles: get', function (t) {
   createServer(function (server, base) {
     var href = base + '/styles/sat-style/tiles/mapbox.satellite/6/10/24.png'
     var hq = hyperquest.get(href)
