@@ -13,13 +13,9 @@ $ npm install mapeo-mobile-server
 
 The following routes are available.
 
-- **U**: unimplemented
-- **F**: fixture available
-- **R**: implemented & ready!
-
 ### Observations
 
-#### [F] `GET /observations?bbox=a,b,c,d`
+#### `GET /observations?bbox=a,b,c,d`
 
 Get list of observations. Currently, `bbox` is ignored and all observations are
 returned. The response is a JSON array of observation objects. E.g.
@@ -31,7 +27,7 @@ returned. The response is a JSON array of observation objects. E.g.
 ]
 ```
 
-#### [F] `POST /observations`
+#### `POST /observations`
 
 Creates an observation. Expects a single JSON object representing the
 observation. The following fields are required:
@@ -49,14 +45,14 @@ Usually there will only be one result, but in forking situations (e.g. two
 devices create offline edits of the same observation then sync) there can be
 multiple results.
 
-#### [F] `PUT /observations/:id`
+#### `PUT /observations/:id`
 
 Update an observation by its `id` by providing a JSON object. Any fields given
 will be replaced.
 
 ### Presets
 
-#### [U] `GET /presets`
+#### `GET /presets`
 
 Returns a JSON array with the names of available presets. E.g.
 
@@ -68,13 +64,13 @@ Returns a JSON array with the names of available presets. E.g.
 ]
 ```
 
-#### [F] `GET /presets/:id`
+#### `GET /presets/:id/*`
 
-Fetch a preset with its `id`. Returns a single JSON object.
+Fetch a static file belonging to a preset with id `id`.
 
 ### Media
 
-#### [U] `PUT /media`
+#### `PUT /media`
 
 Save a piece of media (photos only for now!) to the database. The raw media data
 should be provided. The client should set the `Content-Type` header
@@ -91,13 +87,13 @@ uniquely identify the uploaded media:
 }
 ```
 
-#### [U] `GET /media/:id`
+#### `GET /media/:id`
 
 Retrieve a piece of media (photos only for now) by its `id`.
 
-### Vector Tiles
+### Mapbox Styles & Tiles
 
-#### [U] `GET /styles`
+#### `GET /styles`
 
 Returns a JSON array with the names of all available vector tilesets. E.g.
 
@@ -112,21 +108,19 @@ Returns a JSON array with the names of all available vector tilesets. E.g.
 ]
 ```
 
-#### [U] `GET /styles/:id/style.json`
+#### `GET /styles/:id/style.json`
 
 Retrieve the `style.json` file for a given style.
 
-#### [U] `GET /styles/:id/tiles/:x/:y/:z.:ext`
+#### `GET /styles/:id/tiles/:x/:y/:z.:ext`
 
 Fetch a single vector tile from the tileset `id` by an `x`,`y`,`z` coordinate.
 
 ### Sync
 
-#### [U] `GET /sync/adb`
+#### [TODO] `GET /sync/wifi`
 
-Perform a p2p sync with whatever device the phone is connected to via USB, using
-Android's ADB protocol. Requires (I think) developer mode be enabled on the
-device.
+some kind of sync thing. it's going to be great.
 
 - HTTP 200 is returned on success
 - HTTP 300 is returned if there was an android/adb/phone error
