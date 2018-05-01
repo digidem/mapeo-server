@@ -22,6 +22,7 @@
     "asar": "^0.14.3",
     "body": "^5.1.0",
     "ecstatic": "^3.2.0",
+    "fs-blob-store": "^5.2.1",
     "ndjson": "^1.5.0",
     "pump": "^3.0.0",
     "randombytes": "^2.0.6",

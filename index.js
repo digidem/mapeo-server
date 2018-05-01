@@ -13,13 +13,13 @@ module.exports = function (osm, media) {
 
   // Presets
   router.addRoute('GET /presets',              api.presetsList.bind(api))
-  router.addRoute('GET /presets/:id',          api.presetsGet.bind(api))
+  router.addRoute('GET /presets/:id/*',        api.presetsGet.bind(api))
 
   // Media
   router.addRoute('GET /media/:id',            api.mediaGet.bind(api))
   router.addRoute('POST /media',               api.mediaPost.bind(api))
 
-  // Tiles
+  // Styles 'n Tiles
   router.addRoute('GET /styles',               api.tilesList.bind(api))
   router.addRoute('GET /styles/:id/tiles/:tileid/:z/:y/:x.:ext',
                                                api.tilesGet.bind(api))

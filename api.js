@@ -102,13 +102,27 @@ Api.prototype.observationUpdate = function (req, res, m) {
 // Presets
 Api.prototype.presetsList = function (req, res, m) {
   res.setHeader('content-type', 'application/json')
-  res.end(JSON.stringify(['default', 'jungle']))
+  fs.readdir(path.join(__dirname, 'presets'), function (err, files) {
+    if (err) {
+      res.statusCode = 500
+      res.end(err.toString())
+      return
+    }
+    files = files
+      .filter(function (filename) {
+        return fs.statSync(path.join(__dirname, 'presets', filename)).isDirectory()
+      })
+    res.end(JSON.stringify(files))
+  })
 }
 
 Api.prototype.presetsGet = function (req, res, m) {
-  // TODO: grab jungle presets file and dump it here
-  res.setHeader('content-type', 'application/json')
-  res.end(JSON.stringify({}))
+  var pathname = url.parse(req.url).pathname
+
+  ecstatic({
+    root: __dirname,
+    handleError: false,
+  })(req, res)
 }
 
 
