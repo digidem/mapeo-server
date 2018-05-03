@@ -20,11 +20,11 @@ module.exports = function (osm, media) {
   router.addRoute('POST /media',               api.mediaPost.bind(api))
 
   // Styles 'n Tiles
-  router.addRoute('GET /styles',               api.tilesList.bind(api))
+  router.addRoute('GET /styles',               api.stylesList.bind(api))
   router.addRoute('GET /styles/:id/tiles/:tileid/:z/:y/:x.:ext',
-                                               api.tilesGet.bind(api))
-  router.addRoute('GET /styles/:id/style.json',api.tilesGetStyle.bind(api))
-  router.addRoute('GET /styles/:id/*',         api.tilesGetStatic.bind(api))
+                                               api.stylesGet.bind(api))
+  router.addRoute('GET /styles/:id/style.json',api.stylesGetStyle.bind(api))
+  router.addRoute('GET /styles/:id/*',         api.stylesGetStatic.bind(api))
 
   // Sync
   router.addRoute('GET /sync/adb',             api.syncAdb.bind(api))

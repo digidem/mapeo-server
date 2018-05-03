@@ -160,9 +160,9 @@ Api.prototype.mediaPost = function (req, res, m) {
 
 
 // Tiles
-Api.prototype.tilesList = function (req, res, m) {
+Api.prototype.stylesList = function (req, res, m) {
   res.setHeader('content-type', 'application/json')
-  fs.readdir(path.join(__dirname, 'tiles'), function (err, files) {
+  fs.readdir(path.join(__dirname, 'styles'), function (err, files) {
     if (err) {
       res.statusCode = 500
       res.end(err.toString())
@@ -170,11 +170,11 @@ Api.prototype.tilesList = function (req, res, m) {
     }
     files = files
       .filter(function (file) {
-        var stat = fs.statSync(path.join('tiles', file))
-        return stat.isDirectory() && fs.existsSync(path.join('tiles', file, 'style.json'))
+        var stat = fs.statSync(path.join('styles', file))
+        return stat.isDirectory() && fs.existsSync(path.join('styles', file, 'style.json'))
       })
       .map(function (dir) {
-        var str = fs.readFileSync(path.join('tiles', dir, 'style.json'), 'utf-8')
+        var str = fs.readFileSync(path.join('styles', dir, 'style.json'), 'utf-8')
         if (str) {
           try {
             var json = JSON.parse(str)
@@ -182,7 +182,7 @@ Api.prototype.tilesList = function (req, res, m) {
             var src = json.sources[srcTop]
             if (!src) return null
             return {
-              id: json.id,
+              id: dir,
               name: json.name,
               description: json.description,
               bounds: src.bounds,
@@ -201,11 +201,11 @@ Api.prototype.tilesList = function (req, res, m) {
   })
 }
 
-Api.prototype.tilesGetStyle = function (req, res, m) {
-  serveStyleFile(path.join('tiles', m.id, 'style.json'), m.id, req, res)
+Api.prototype.stylesGetStyle = function (req, res, m) {
+  serveStyleFile(path.join('styles', m.id, 'style.json'), m.id, req, res)
 }
 
-Api.prototype.tilesGetStatic = function (req, res, m) {
+Api.prototype.stylesGetStatic = function (req, res, m) {
   var pathname = url.parse(req.url).pathname
 
   ecstatic({
@@ -214,8 +214,8 @@ Api.prototype.tilesGetStatic = function (req, res, m) {
   })(req, res)
 }
 
-Api.prototype.tilesGet = function (req, res, m) {
-  var asarPath = path.join('tiles', m.id, 'tiles', m.tileid + '.asar')
+Api.prototype.stylesGet = function (req, res, m) {
+  var asarPath = path.join('styles', m.id, 'tiles', m.tileid + '.asar')
 
   var filename = [m.z, m.y, m.x].join('/') + '.' + m.ext
   var buf = asarGet(asarPath, filename)
@@ -262,7 +262,7 @@ function serveStyleFile (styleFile, id, req, res) {
         res.end(err.toString())
         return
       }
-      data = Buffer.from(data.replace(/\{host\}/gm, 'http://' + req.headers.host + '/tiles/' + id))
+      data = Buffer.from(data.replace(/\{host\}/gm, 'http://' + req.headers.host + '/styles/' + id))
       res.setHeader('content-type', 'application/json; charset=utf-8')
       res.setHeader('last-modified', (new Date(stat.mtime)).toUTCString())
       res.setHeader('content-length', data.length)
