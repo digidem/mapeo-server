@@ -19,4 +19,4 @@ var server = http.createServer(function (req, res) {
     res.end('not found\n')
   }
 })
-server.listen(5000, console.log.bind(console, 'listening on port 50000'))
+server.listen(5000, console.log.bind(console, 'listening on port 5000'))
