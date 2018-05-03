@@ -112,7 +112,7 @@
       "scheme": "xyz",
       "tilejson": "2.2.0",
       "tiles": [
-        "{host}/tiles/sat-streets-style/{z}/{x}/{y}.vector.pbf"
+        "{host}/tiles/streets-sat-style/{z}/{x}/{y}.vector.pbf"
       ],
       "vector_layers": [
         {
