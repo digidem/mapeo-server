@@ -46,13 +46,7 @@ Api.prototype.observationGet = function (req, res, m) {
       return
     }
     res.setHeader('content-type', 'application/json')
-    obses = Object.keys(obses).map(function (version) {
-      var obs = obses[version]
-      obs.id = m.id
-      obs.version = version
-      return obs
-    })
-    res.end(JSON.stringify(obses))
+    res.end(JSON.stringify(flatObs(m.id, obses)))
   })
 }
 
@@ -88,13 +82,43 @@ Api.prototype.observationCreate = function (req, res, m) {
   })
 }
 
-// TODO: is this needed for v1?
 Api.prototype.observationUpdate = function (req, res, m) {
-  // TODO: parse object, append id that was given
-  res.setHeader('content-type', 'application/json')
-  res.end(JSON.stringify({ id: '123', lat: 12.3, lon: -0.522 }))
-}
+  var self = this
+  this.osm.get(m.id, function (err, obses) {
+    if (err) {
+      res.statusCode = 500
+      res.end('failed to update observation:' + err.toString())
+      return
+    }
+    if (obses.length === 0) {
+      res.statusCode = 500
+      res.end('failed to update observation: No observation found with id ' + m.id)
+      return
+    }
+    obses = flatObs(m.id, obses)
 
+    body(req, function (err, obs) {
+      if (err) {
+        res.statusCode = 400
+        res.end('couldnt parse body json: ' + err.toString())
+        return
+      }
+      var old = obses[0]
+      var newObs = Object.assign(old, obs)
+      self.osm.put(m.id, newObs, function (err, node) {
+        if (err) {
+          res.statusCode = 500
+          res.end('failed to update observation:' + err.toString())
+          return
+        }
+        res.setHeader('content-type', 'application/json')
+        obs.id = node.value.k
+        obs.version = node.key
+        res.end(JSON.stringify(obs))
+      })
+    })
+  })
+}
 
 // Presets
 Api.prototype.presetsList = function (req, res, m) {
@@ -231,7 +255,6 @@ Api.prototype.stylesGet = function (req, res, m) {
   }
 }
 
-
 // Sync
 Api.prototype.syncAdb = function (req, res, m) {
   // 200 OK
@@ -268,5 +291,14 @@ function serveStyleFile (styleFile, id, req, res) {
       res.statusCode = 200
       res.end(data)
     })
+  })
+}
+
+function flatObs (id, obses) {
+  return Object.keys(obses).map(function (version) {
+    var obs = obses[version]
+    obs.id = id
+    obs.version = version
+    return obs
   })
 }

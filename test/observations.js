@@ -120,34 +120,71 @@ test('observations: create + list', function (t) {
             version: nodes[0].key
           }
         ]
-        check(expected)
+        var href = base + '/observations'
+        check(t, href, expected, function () {
+          server.close()
+          t.end()
+        })
       })
     })
+  })
+})
 
-    function check (expected) {
-      var href = base + '/observations'
+test('observations: create + update', function (t) {
+  createServer(function (server, base, osm, media) {
+    osm.create({lat:1,lon:2,type:'observation'}, function (err, id, node) {
+      t.error(err)
 
-      var hq = hyperquest.get(href, {
+      var expected = {
+        lat: 1.5,
+        lon: 2,
+        id: id,
+        type: 'observation'
+      }
+
+      var href = `${base}/observations/${id}`
+
+      var hq = hyperquest.put(href, {
         headers: { 'content-type': 'application/json' }
       })
 
-      // http response
-      hq.once('response', function (res) {
+      hq.on('response', function (res) {
         t.equal(res.statusCode, 200, 'create 200 ok')
         t.equal(res.headers['content-type'], 'application/json', 'type correct')
+
+        hq.pipe(concat({ encoding: 'string' }, function (body) {
+          var obs = JSON.parse(body)
+          check(t, href, [obs], function () {
+            server.close()
+            t.end()
+          })
+        }))
       })
 
-      // response content
-      hq.pipe(concat({ encoding: 'string' }, function (body) {
-        try {
-          var objs = JSON.parse(body)
-          t.deepEquals(objs, expected, 'observation from server matches expected')
-        } catch (e) {
-          t.error(e, 'json parsing exception!')
-        }
-        server.close()
-        t.end()
-      }))
-    }
+      hq.end(JSON.stringify(expected))
+    })
   })
 })
+
+function check (t, href, expected, done) {
+  var hq = hyperquest.get(href, {
+    headers: { 'content-type': 'application/json' }
+  })
+
+  // http response
+  hq.once('response', function (res) {
+    t.equal(res.statusCode, 200, 'create 200 ok')
+    t.equal(res.headers['content-type'], 'application/json', 'type correct')
+  })
+
+  // response content
+  hq.pipe(concat({ encoding: 'string' }, function (body) {
+    try {
+      var objs = JSON.parse(body)
+      t.deepEquals(objs, expected, 'observation from server matches expected')
+    } catch (e) {
+      t.error(e, 'json parsing exception!')
+    }
+    done()
+  }))
+}
