@@ -103,18 +103,25 @@ Api.prototype.observationUpdate = function (req, res, m) {
         res.end('couldnt parse body json: ' + err.toString())
         return
       }
+      var opts = {}
+      if (obses.length > 1) {
+        obses = obses.sort(function (a, b) {
+          return b.created_at_timestamp - a.created_at_timestamp
+        })
+        opts.links = obses[0].id
+      }
       var old = obses[0]
       var newObs = Object.assign(old, obs)
-      self.osm.put(m.id, newObs, function (err, node) {
+      self.osm.put(m.id, newObs, opts, function (err, node) {
         if (err) {
           res.statusCode = 500
           res.end('failed to update observation:' + err.toString())
           return
         }
         res.setHeader('content-type', 'application/json')
-        obs.id = node.value.k
-        obs.version = node.key
-        res.end(JSON.stringify(obs))
+        newObs.id = node.value.k
+        newObs.version = node.key
+        res.end(JSON.stringify(newObs))
       })
     })
   })

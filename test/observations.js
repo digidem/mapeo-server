@@ -132,14 +132,18 @@ test('observations: create + list', function (t) {
 
 test('observations: create + update', function (t) {
   createServer(function (server, base, osm, media) {
-    osm.create({lat:1,lon:2,type:'observation'}, function (err, id, node) {
+    var og = {
+      lat: 1,
+      lon: 2,
+      type: 'observation',
+      created_at_timestamp: new Date().getTime()
+    }
+    osm.create(og, function (err, id, node) {
       t.error(err)
 
-      var expected = {
+      var newData = {
         lat: 1.5,
-        lon: 2,
-        id: id,
-        type: 'observation'
+        lon: 2
       }
 
       var href = `${base}/observations/${id}`
@@ -154,6 +158,7 @@ test('observations: create + update', function (t) {
 
         hq.pipe(concat({ encoding: 'string' }, function (body) {
           var obs = JSON.parse(body)
+          var href = `${base}/observations/${obs.id}`
           check(t, href, [obs], function () {
             server.close()
             t.end()
@@ -161,7 +166,7 @@ test('observations: create + update', function (t) {
         }))
       })
 
-      hq.end(JSON.stringify(expected))
+      hq.end(JSON.stringify(newData))
     })
   })
 })
