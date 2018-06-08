@@ -1,5 +1,5 @@
 var Osm = require('osm-p2p')
-var blobstore = require('fs-blob-store')
+var blobstore = require('safe-fs-blob-store')
 var Router = require('.')
 
 var osm = Osm('./db')
