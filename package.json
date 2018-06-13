@@ -1,5 +1,5 @@
 {
-  "name": "mapeo-mobile-server",
+  "name": "mapeo-server",
   "version": "1.0.0",
   "description": "Mapeo Mobile server, used for managing observation data. It includes observation and media management routes and static file routes for an offline tile server.",
   "main": "index.js",
@@ -9,14 +9,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/digidem/mapeo-mobile-server.git"
+    "url": "git+https://github.com/digidem/mapeo-server.git"
   },
   "author": "Karissa McKelvey",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/digidem/mapeo-mobile-server/issues"
+    "url": "https://github.com/digidem/mapeo-server/issues"
   },
-  "homepage": "https://github.com/digidem/mapeo-mobile-server#readme",
+  "homepage": "https://github.com/digidem/mapeo-server#readme",
   "dependencies": {
     "asar": "^0.14.3",
     "body": "^5.1.0",

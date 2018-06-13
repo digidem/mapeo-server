@@ -1,12 +1,12 @@
-# Mapeo Mobile Server
+# Mapeo Server
 
-Mapeo Mobile server, used for managing observation data. It includes observation
-and media management routes and static file routes for an offline tile server.
+Mapeo server, used for managing observation data. It includes observation and
+media management routes and static file routes for an offline tile server.
 
 ## Install
 
 ```
-$ npm install mapeo-mobile-server
+$ npm install mapeo-server
 ```
 
 ## Routes
@@ -131,7 +131,7 @@ some kind of sync thing. it's going to be great.
 ```js
 var Osm = require('osm-p2p')
 var blobstore = require('fs-blob-store')
-var Router = require('mapeo-mobile-server')
+var Router = require('mapeo-server')
 
 var osm = Osm('./db')
 var media = blobstore('./media')

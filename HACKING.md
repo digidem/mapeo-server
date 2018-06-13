@@ -1,6 +1,6 @@
-# Hacking on mapeo-mobile-server
+# Hacking on mapeo-server
 
-Some notes for anyone working on or with mapeo-mobile-server.
+Some notes for anyone working on or with mapeo-server.
 
 ## Vector & Raster Tiles
 
