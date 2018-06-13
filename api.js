@@ -190,7 +190,7 @@ Api.prototype.mediaPost = function (req, res, m) {
 // Tiles
 Api.prototype.stylesList = function (req, res, m) {
   res.setHeader('content-type', 'application/json')
-  fs.readdir(path.join(__dirname, 'styles'), function (err, files) {
+  fs.readdir('styles', function (err, files) {
     if (err) {
       res.statusCode = 500
       res.end(err.toString())
