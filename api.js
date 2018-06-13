@@ -130,7 +130,7 @@ Api.prototype.observationUpdate = function (req, res, m) {
 // Presets
 Api.prototype.presetsList = function (req, res, m) {
   res.setHeader('content-type', 'application/json')
-  fs.readdir(path.join(__dirname, 'presets'), function (err, files) {
+  fs.readdir('presets', function (err, files) {
     if (err) {
       res.statusCode = 500
       res.end(err.toString())
@@ -138,7 +138,7 @@ Api.prototype.presetsList = function (req, res, m) {
     }
     files = files
       .filter(function (filename) {
-        return fs.statSync(path.join(__dirname, 'presets', filename)).isDirectory()
+        return fs.statSync(path.join('presets', filename)).isDirectory()
       })
     res.end(JSON.stringify(files))
   })
@@ -148,7 +148,7 @@ Api.prototype.presetsGet = function (req, res, m) {
   var pathname = url.parse(req.url).pathname
 
   ecstatic({
-    root: __dirname,
+    root: '.',
     handleError: false,
   })(req, res)
 }
@@ -237,7 +237,7 @@ Api.prototype.stylesGetStatic = function (req, res, m) {
   var pathname = url.parse(req.url).pathname
 
   ecstatic({
-    root: __dirname,
+    root: '.',
     handleError: false,
   })(req, res)
 }
