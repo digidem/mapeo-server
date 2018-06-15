@@ -172,7 +172,8 @@ var Router = require('mapeo-server')
 var osm = Osm('./db')
 var media = blobstore('./media')
 
-var route = Router(osm, media)
+var root = '/path/to/my/static/files' // optional
+var route = Router(osm, media, {root})
 
 var http = require('http')
 var server = http.createServer(function (req, res) {
