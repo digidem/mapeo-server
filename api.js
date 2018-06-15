@@ -17,6 +17,7 @@ function Api (osm, media, opts) {
   this.media = media
   var id = opts.id || 'MapeoDesktop_' + randombytes(8).toString('hex')
   var host = opts.host
+  this.root = opts.root || '.'
   this.sync = sync(osm, media, {id, host})
   this.sync.listen()
 }
@@ -156,10 +157,11 @@ Api.prototype.presetsList = function (req, res, m) {
 }
 
 Api.prototype.presetsGet = function (req, res, m) {
+  var self = this
   var pathname = url.parse(req.url).pathname
 
   ecstatic({
-    root: '.',
+    root: self.root,
     handleError: false,
   })(req, res)
 }
@@ -239,14 +241,15 @@ Api.prototype.stylesList = function (req, res, m) {
 }
 
 Api.prototype.stylesGetStyle = function (req, res, m) {
-  serveStyleFile(path.join('styles', m.id, 'style.json'), m.id, req, res)
+  serveStyleFile(path.join(this.root, 'styles', m.id, 'style.json'), m.id, req, res)
 }
 
 Api.prototype.stylesGetStatic = function (req, res, m) {
+  var self = this
   var pathname = url.parse(req.url).pathname
 
   ecstatic({
-    root: '.',
+    root: self.root,
     handleError: false,
   })(req, res)
 }
