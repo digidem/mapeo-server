@@ -315,8 +315,8 @@ Api.prototype.syncToTarget = function (req, res, m) {
   }
 }
 
-Api.prototype.close = function () {
-  this.sync.close()
+Api.prototype.close = function (cb) {
+  this.sync.close(cb)
 }
 
 function send (res, topic, msg) {
