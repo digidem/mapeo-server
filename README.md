@@ -118,13 +118,49 @@ Fetch a single vector tile from the tileset `id` by an `x`,`y`,`z` coordinate.
 
 ### Sync
 
-#### [TODO] `GET /sync/wifi`
+#### `GET /sync/targets`
 
-some kind of sync thing. it's going to be great.
+Returns list of available sync targets. Right now, only lists other services broadcasting on the local network through mdns using the 'mapeo-sync' key.
 
-- HTTP 200 is returned on success
-- HTTP 300 is returned if there was an android/adb/phone error
-- HTTP 500 is returned if there was a server/database error
+Each sync target is an object with `ip`, `port`, and `host`.
+
+#### `GET /sync/start`
+
+Options
+
+  * `filename`: For local filesystem sync, provide filename
+  * `port` and `host`: To sync with another target through TCP (UDP?)
+
+Start syncing and listen to progress events. Events are returned as a newline-delimited JSON stream.
+
+Events are returned with a `topic` and `message` key:
+
+```js
+{"topic": "replication-error", "message": "Some error message here"}
+```
+
+Valid event topics:
+
+  * `replication-error`: Sent once there is error, and the stream is closed.
+  * `replication-started`: Sent once to indicate replication has started, but no data has been sent.
+  * `replication-progress`: Sent for each block of data sent.
+  * `replication-complete`: Sent once for a replication success, and the stream is closed.
+
+Example client code for `/sync/start`
+```js
+var hyperquest = require('hyperquest')
+var target = {filename: '/path/to/my/database.mapeodata'}
+var url = `http://${host}/sync/start?${querystring.stringify(target)}`
+var hq = hyperquest(url)
+var stream = pump(hq, split2())
+stream.on('data', function (data) {
+  var row = JSON.parse(data)
+  if (row.topic === 'replication-progress') console.log('progress...')
+  if (row.topic === 'replication-error') console.log('error', row.message)
+  if (row.topic === 'replication-complete') console.log('done')
+})
+
+```
 
 ## Usage
 
@@ -140,7 +176,7 @@ var route = Router(osm, media)
 
 var http = require('http')
 var server = http.createServer(function (req, res) {
-  var fn = route(req, res)
+  var fn = route.handle(req, res)
   if (fn) {
     fn()
   } else {
@@ -149,6 +185,9 @@ var server = http.createServer(function (req, res) {
   }
 })
 server.listen(5000)
+server.on('close', function () {
+  route.api.close()
+})
 ```
 
 ### Use as Express middleware

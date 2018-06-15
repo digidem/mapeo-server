@@ -1,4 +1,6 @@
 var fs = require('fs')
+var querystring = require('querystring')
+var sync = require('mapeo-sync')
 var path = require('path')
 var url = require('url')
 var body = require('body/json')
@@ -8,13 +10,22 @@ var ecstatic = require('ecstatic')
 
 module.exports = Api
 
-function Api (osm, media) {
-  if (!(this instanceof Api)) return new Api(osm, media)
+function Api (osm, media, opts) {
+  if (!(this instanceof Api)) return new Api(osm, media, opts)
+  if (!opts) opts = {}
   this.osm = osm
   this.media = media
+  var id = opts.id || 'MapeoDesktop_' + randombytes(8).toString('hex')
+  var host = opts.host
+  this.sync = sync(osm, media, {id, host})
+  this.sync.listen()
 }
 
 // Observations
+Api.prototype.observationDelete = function (req, res, m) {
+  res.end('not implemented')
+}
+
 Api.prototype.observationList = function (req, res, m) {
   var results = []
 
@@ -153,7 +164,6 @@ Api.prototype.presetsGet = function (req, res, m) {
   })(req, res)
 }
 
-
 // Media
 Api.prototype.mediaGet = function (req, res, m) {
   var self = this
@@ -185,7 +195,6 @@ Api.prototype.mediaPost = function (req, res, m) {
       res.end(err.toString())
     })
 }
-
 
 // Tiles
 Api.prototype.stylesList = function (req, res, m) {
@@ -262,10 +271,54 @@ Api.prototype.stylesGet = function (req, res, m) {
   }
 }
 
-// Sync
-Api.prototype.syncAdb = function (req, res, m) {
-  // 200 OK
-  res.end()
+Api.prototype.getSyncTargets = function (req, res, m) {
+  res.setHeader('Content-Type', 'application/json')
+  res.end(JSON.stringify(this.sync.targets))
+}
+
+Api.prototype.syncToTarget = function (req, res, m) {
+  var self = this
+  var query = url.parse(req.url).query
+  if (!query) return onerror(res, 'Requires filename or host and port')
+  var params = querystring.parse(query)
+  if (self.replicating) return onerror(res, 'Failed: only one replication allowed at a time.')
+  self.replicating = true
+  var progress
+  if (params.filename) {
+    progress = self.sync.replicateFromFile(params.filename)
+  } else if (params.host && params.port) {
+    progress = self.sync.syncToTarget(params)
+  } else return onerror(res, 'Requires filename or host and port')
+
+  send(res, 'replication-started')
+  progress.on('progress', function (data) {
+    send(res, 'replication-progress', data)
+  })
+  progress.on('error', onend)
+  progress.on('end', onend)
+
+  function onend (err) {
+    self.replicating = false
+    if (err) return onerror(res, err.message)
+    send(res, 'replication-complete')
+    res.end()
+  }
+
+  function onerror (res, err) {
+    self.replicating = false
+    res.statusCode = 400
+    var str = JSON.stringify({topic: 'replication-error', message: err.message || err}) + '\n'
+    res.end(str)
+  }
+}
+
+Api.prototype.close = function () {
+  this.sync.close()
+}
+
+function send (res, topic, msg) {
+  var str = JSON.stringify({ topic: topic, message: msg }) + '\n'
+  res.write(str)
 }
 
 function asarGet (archive, fn) {
