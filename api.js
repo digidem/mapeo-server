@@ -284,8 +284,6 @@ Api.prototype.syncToTarget = function (req, res, m) {
   var query = url.parse(req.url).query
   if (!query) return onerror(res, 'Requires filename or host and port')
   var params = querystring.parse(query)
-  if (self.replicating) return onerror(res, 'Failed: only one replication allowed at a time.')
-  self.replicating = true
   var progress
   if (params.filename) {
     progress = self.sync.replicateFromFile(params.filename)
@@ -294,21 +292,21 @@ Api.prototype.syncToTarget = function (req, res, m) {
   } else return onerror(res, 'Requires filename or host and port')
 
   send(res, 'replication-started')
-  progress.on('progress', function (data) {
+  function onprogress (data) {
     send(res, 'replication-progress', data)
-  })
+  }
+  progress.on('progress', onprogress)
   progress.on('error', onend)
   progress.on('end', onend)
 
   function onend (err) {
-    self.replicating = false
     if (err) return onerror(res, err.message)
     send(res, 'replication-complete')
+    progress.removeListener('progress', onprogress)
     res.end()
   }
 
   function onerror (res, err) {
-    self.replicating = false
     res.statusCode = 400
     var str = JSON.stringify({topic: 'replication-error', message: err.message || err}) + '\n'
     res.end(str)
