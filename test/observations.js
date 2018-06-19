@@ -35,6 +35,32 @@ test('observations: create', function (t) {
   })
 })
 
+test('observations: create + delete', function (t) {
+  createServer(function (server, base) {
+    var data = JSON.stringify({lat: 5, lon: -0.123, type: 'observation'})
+
+    postJson(base + '/observations', data, function (err, obs) {
+      t.error(err)
+      t.ok(obs.id, 'id field set')
+      t.ok(obs.version, 'version field set')
+      t.ok(obs.created_at_timestamp, 'created_at_timestamp field set')
+
+      delJson(`${base}/observations/${obs.id}`, function (err) {
+        t.error(err)
+
+        getJson(`${base}/observations/${obs.id}`, function (err, obses) {
+          t.error(err)
+          t.equals(obses.length, 1)
+          t.ok(obses[0].deleted)
+
+          server.close()
+          t.end()
+        })
+      })
+    })
+  })
+})
+
 test('observations: create invalid', function (t) {
   createServer(function (server, base) {
     var href = base + '/observations'
