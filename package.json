@@ -23,7 +23,8 @@
     "ecstatic": "^3.2.0",
     "mapeo-sync": "^1.0.2",
     "randombytes": "^2.0.6",
-    "routes": "^2.1.0"
+    "routes": "^2.1.0",
+    "xtend": "^4.0.1"
   },
   "devDependencies": {
     "abstract-blob-store": "^3.3.4",

@@ -171,6 +171,48 @@ test('observations: create + update', function (t) {
   })
 })
 
+test('observations: create + convert', function (t) {
+  createServer(function (server, base, osm, media) {
+    var og = {
+      lat: 1,
+      lon: 2,
+      type: 'observation',
+      created_at_timestamp: new Date().getTime()
+    }
+    osm.create(og, function (err, id, node) {
+      t.error(err)
+
+      // convert to node
+      putJson(`${base}/observations/to-element/${id}`, function (err, elm) {
+        t.error(err)
+        t.ok(elm.id)
+
+        // look up observation again + check for element_id tag
+        getJson(`${base}/observations/${id}`, function (err, obses) {
+          t.error(err)
+          t.equals(obses[0].tags.element_id, elm.id)
+
+          // look up element + check id
+          getJson(`${base}/observations/${elm.id}`, function (err, theElms) {
+            t.error(err)
+            t.equals(theElms[0].id, elm.id)
+
+            // try to convert observation *again* and ensure the same id comes
+            // back
+            putJson(`${base}/observations/to-element/${id}`, function (err, oldElm) {
+              t.error(err)
+              t.equals(oldElm.id, elm.id)
+
+              server.close()
+              t.end()
+            })
+          })
+        })
+      })
+    })
+  })
+})
+
 function check (t, href, expected, done) {
   var hq = hyperquest.get(href, {
     headers: { 'content-type': 'application/json' }
@@ -192,4 +234,31 @@ function check (t, href, expected, done) {
     }
     done()
   }))
+}
+
+function putJson (href, cb) {
+  var hq = hyperquest.put(href, { headers: { 'content-type': 'application/json' } })
+  hq.on('response', function (res) {
+    if (res.statusCode === 200) {
+      hq.pipe(concat({ encoding: 'string' }, function (body) {
+        cb(null, JSON.parse(body))
+      }))
+    } else {
+      cb(res.statusCode)
+    }
+  })
+  hq.end()
+}
+
+function getJson (href, cb) {
+  var hq = hyperquest.get(href, { headers: { 'content-type': 'application/json' } })
+  hq.on('response', function (res) {
+    if (res.statusCode === 200) {
+      hq.pipe(concat({ encoding: 'string' }, function (body) {
+        cb(null, JSON.parse(body))
+      }))
+    } else {
+      cb(res.statusCode)
+    }
+  })
 }
