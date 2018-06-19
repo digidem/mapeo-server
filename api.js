@@ -29,7 +29,7 @@ Api.prototype.observationDelete = function (req, res, m) {
   this.osm.del(m.id, function (err) {
     if (err) {
       res.statusCode = 500
-      res.end(JSON.stringify('failed to create observation: ' + err.toString()))
+      res.end(JSON.stringify('failed to delete observation: ' + err.toString()))
       return
     }
     res.end('true')
