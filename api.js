@@ -7,6 +7,7 @@ var body = require('body/json')
 var randombytes = require('randombytes')
 var asar = require('asar')
 var ecstatic = require('ecstatic')
+var xtend = require('xtend')
 
 module.exports = Api
 
@@ -135,6 +136,64 @@ Api.prototype.observationUpdate = function (req, res, m) {
         newObs.version = node.key
         res.end(JSON.stringify(newObs))
       })
+    })
+  })
+}
+
+Api.prototype.observationConvert = function (req, res, m) {
+  var self = this
+
+  res.setHeader('content-type', 'application/json')
+
+  // 1. get the observation
+  this.osm.get(m.id, function (err, obses) {
+    if (err) {
+      res.statusCode = 500
+      res.end('failed to lookup observation: ' + err.toString())
+      return
+    }
+    if (!Object.keys(obses).length) {
+      res.statusCode = 404
+      res.end('failed to lookup observation: not found')
+      return
+    }
+
+    // 2. see if tags.element_id already present (short circuit)
+    var obs = obses[Object.keys(obses)]
+    if (obs.tags && obs.tags.element_id) {
+      res.end(JSON.stringify({ id: obs.tags.element_id }))
+      return
+    }
+
+    var batch = []
+
+    // 3. create node
+    batch.push({
+      type: 'put',
+      key: randombytes(8).toString('hex'),
+      value: xtend(obs, {
+        type: 'node'
+      })
+    })
+
+    // 4. modify observation tags
+    obs.tags = obs.tags || {}
+    obs.tags.element_id = batch[0].key
+    batch.push({
+      type: 'put',
+      key: m.id,
+      value: obs
+    })
+
+
+    // 5. batch modification
+    self.osm.batch(batch, function (err) {
+      if (err) {
+        res.statusCode = 500
+        res.end('failed to write new element & observation')
+        return
+      }
+      res.end(JSON.stringify({ id: obs.tags.element_id }))
     })
   })
 }
