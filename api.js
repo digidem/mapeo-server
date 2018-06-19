@@ -149,12 +149,12 @@ Api.prototype.observationConvert = function (req, res, m) {
   this.osm.get(m.id, function (err, obses) {
     if (err) {
       res.statusCode = 500
-      res.end('failed to lookup observation: ' + err.toString())
+      res.end(JSON.stringify('failed to lookup observation: ' + err.toString()))
       return
     }
     if (!Object.keys(obses).length) {
       res.statusCode = 404
-      res.end('failed to lookup observation: not found')
+      res.end(JSON.stringify('failed to lookup observation: not found'))
       return
     }
 
@@ -190,7 +190,7 @@ Api.prototype.observationConvert = function (req, res, m) {
     self.osm.batch(batch, function (err) {
       if (err) {
         res.statusCode = 500
-        res.end('failed to write new element & observation')
+        res.end(JSON.stringify('failed to write new element & observation'))
         return
       }
       res.end(JSON.stringify({ id: obs.tags.element_id }))
