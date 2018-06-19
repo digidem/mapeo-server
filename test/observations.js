@@ -262,3 +262,16 @@ function getJson (href, cb) {
     }
   })
 }
+
+function delJson (href, cb) {
+  var hq = hyperquest.del(href, { headers: { 'content-type': 'application/json' } })
+  hq.on('response', function (res) {
+    if (res.statusCode === 200) {
+      hq.pipe(concat({ encoding: 'string' }, function (body) {
+        cb(null, JSON.parse(body))
+      }))
+    } else {
+      cb(res.statusCode)
+    }
+  })
+}
