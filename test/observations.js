@@ -236,6 +236,20 @@ function check (t, href, expected, done) {
   }))
 }
 
+function postJson (href, data, cb) {
+  var hq = hyperquest.post(href, { headers: { 'content-type': 'application/json' } })
+  hq.on('response', function (res) {
+    if (res.statusCode === 200) {
+      hq.pipe(concat({ encoding: 'string' }, function (body) {
+        cb(null, JSON.parse(body))
+      }))
+    } else {
+      cb(res.statusCode)
+    }
+  })
+  hq.end(data)
+}
+
 function putJson (href, cb) {
   var hq = hyperquest.put(href, { headers: { 'content-type': 'application/json' } })
   hq.on('response', function (res) {
@@ -264,7 +278,7 @@ function getJson (href, cb) {
 }
 
 function delJson (href, cb) {
-  var hq = hyperquest.del(href, { headers: { 'content-type': 'application/json' } })
+  var hq = hyperquest.delete(href, { headers: { 'content-type': 'application/json' } })
   hq.on('response', function (res) {
     if (res.statusCode === 200) {
       hq.pipe(concat({ encoding: 'string' }, function (body) {
@@ -274,4 +288,5 @@ function delJson (href, cb) {
       cb(res.statusCode)
     }
   })
+  hq.end()
 }
