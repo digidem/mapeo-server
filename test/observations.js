@@ -197,8 +197,15 @@ test('observations: create + convert', function (t) {
             t.error(err)
             t.equals(theElms[0].id, elm.id)
 
-            server.close()
-            t.end()
+            // try to convert observation *again* and ensure the same id comes
+            // back
+            putJson(`${base}/observations/to-element/${id}`, function (err, oldElm) {
+              t.error(err)
+              t.equals(oldElm.id, elm.id)
+
+              server.close()
+              t.end()
+            })
           })
         })
       })

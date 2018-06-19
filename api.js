@@ -159,7 +159,7 @@ Api.prototype.observationConvert = function (req, res, m) {
     }
 
     // 2. see if tags.element_id already present (short circuit)
-    var obs = obses[Object.keys(obses)]
+    var obs = obses[Object.keys(obses)[0]]
     if (obs.tags && obs.tags.element_id) {
       res.end(JSON.stringify({ id: obs.tags.element_id }))
       return
