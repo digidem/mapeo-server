@@ -35,6 +35,32 @@ test('observations: create', function (t) {
   })
 })
 
+test('observations: create + delete', function (t) {
+  createServer(function (server, base) {
+    var data = JSON.stringify({lat: 5, lon: -0.123, type: 'observation'})
+
+    postJson(base + '/observations', data, function (err, obs) {
+      t.error(err)
+      t.ok(obs.id, 'id field set')
+      t.ok(obs.version, 'version field set')
+      t.ok(obs.created_at_timestamp, 'created_at_timestamp field set')
+
+      delJson(`${base}/observations/${obs.id}`, function (err) {
+        t.error(err)
+
+        getJson(`${base}/observations/${obs.id}`, function (err, obses) {
+          t.error(err)
+          t.equals(obses.length, 1)
+          t.ok(obses[0].deleted)
+
+          server.close()
+          t.end()
+        })
+      })
+    })
+  })
+})
+
 test('observations: create invalid', function (t) {
   createServer(function (server, base) {
     var href = base + '/observations'
@@ -236,6 +262,20 @@ function check (t, href, expected, done) {
   }))
 }
 
+function postJson (href, data, cb) {
+  var hq = hyperquest.post(href, { headers: { 'content-type': 'application/json' } })
+  hq.on('response', function (res) {
+    if (res.statusCode === 200) {
+      hq.pipe(concat({ encoding: 'string' }, function (body) {
+        cb(null, JSON.parse(body))
+      }))
+    } else {
+      cb(res.statusCode)
+    }
+  })
+  hq.end(data)
+}
+
 function putJson (href, cb) {
   var hq = hyperquest.put(href, { headers: { 'content-type': 'application/json' } })
   hq.on('response', function (res) {
@@ -261,4 +301,18 @@ function getJson (href, cb) {
       cb(res.statusCode)
     }
   })
+}
+
+function delJson (href, cb) {
+  var hq = hyperquest.delete(href, { headers: { 'content-type': 'application/json' } })
+  hq.on('response', function (res) {
+    if (res.statusCode === 200) {
+      hq.pipe(concat({ encoding: 'string' }, function (body) {
+        cb(null, JSON.parse(body))
+      }))
+    } else {
+      cb(res.statusCode)
+    }
+  })
+  hq.end()
 }

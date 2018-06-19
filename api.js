@@ -25,7 +25,15 @@ function Api (osm, media, opts) {
 
 // Observations
 Api.prototype.observationDelete = function (req, res, m) {
-  res.end('not implemented')
+  res.setHeader('content-type', 'application/json')
+  this.osm.del(m.id, function (err) {
+    if (err) {
+      res.statusCode = 500
+      res.end(JSON.stringify('failed to delete observation: ' + err.toString()))
+      return
+    }
+    res.end('true')
+  })
 }
 
 Api.prototype.observationList = function (req, res, m) {
