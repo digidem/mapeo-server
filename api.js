@@ -208,8 +208,9 @@ Api.prototype.observationConvert = function (req, res, m) {
 
 // Presets
 Api.prototype.presetsList = function (req, res, m) {
+  var self = this
   res.setHeader('content-type', 'application/json')
-  fs.readdir('presets', function (err, files) {
+  fs.readdir(path.join(self.root, 'presets'), function (err, files) {
     if (err) {
       res.statusCode = 500
       res.end(err.toString())
@@ -217,7 +218,7 @@ Api.prototype.presetsList = function (req, res, m) {
     }
     files = files
       .filter(function (filename) {
-        return fs.statSync(path.join('presets', filename)).isDirectory()
+        return fs.statSync(path.join(self.root, 'presets', filename)).isDirectory()
       })
     res.end(JSON.stringify(files))
   })
@@ -267,8 +268,9 @@ Api.prototype.mediaPost = function (req, res, m) {
 
 // Tiles
 Api.prototype.stylesList = function (req, res, m) {
+  var self = this
   res.setHeader('content-type', 'application/json')
-  fs.readdir('styles', function (err, files) {
+  fs.readdir(path.join(self.root, 'styles'), function (err, files) {
     if (err) {
       res.statusCode = 500
       res.end(err.toString())
@@ -277,10 +279,10 @@ Api.prototype.stylesList = function (req, res, m) {
     files = files
       .filter(function (file) {
         var stat = fs.statSync(path.join('styles', file))
-        return stat.isDirectory() && fs.existsSync(path.join('styles', file, 'style.json'))
+        return stat.isDirectory() && fs.existsSync(path.join(self.root, 'styles', file, 'style.json'))
       })
       .map(function (dir) {
-        var str = fs.readFileSync(path.join('styles', dir, 'style.json'), 'utf-8')
+        var str = fs.readFileSync(path.join(self.root, 'styles', dir, 'style.json'), 'utf-8')
         if (str) {
           try {
             var json = JSON.parse(str)
@@ -322,7 +324,8 @@ Api.prototype.stylesGetStatic = function (req, res, m) {
 }
 
 Api.prototype.stylesGet = function (req, res, m) {
-  var asarPath = path.join('styles', m.id, 'tiles', m.tileid + '.asar')
+  var self = this
+  var asarPath = path.join(self.root, 'styles', m.id, 'tiles', m.tileid + '.asar')
 
   var filename = [m.z, m.y, m.x].join('/') + '.' + m.ext
   var buf = asarGet(asarPath, filename)
