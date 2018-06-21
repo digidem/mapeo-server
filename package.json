@@ -1,6 +1,6 @@
 {
   "name": "mapeo-server",
-  "version": "3.3.1",
+  "version": "4.0.0",
   "description": "Mapeo Mobile server, used for managing observation data. It includes observation and media management routes and static file routes for an offline tile server.",
   "main": "index.js",
   "scripts": {
