@@ -1,5 +1,7 @@
 var Router = require('routes')
 var Api = require('./api')
+var url = require('url')
+var querystring = require('querystring')
 
 module.exports = function (osm, media, opts) {
   var router = Router()
@@ -36,9 +38,11 @@ module.exports = function (osm, media, opts) {
   return {
     api,
     handle: function (req, res) {
-      var m = router.match(req.method + ' ' + req.url)
+      var parsed = url.parse(req.url)
+      var q = querystring.parse(parsed.query)
+      var m = router.match(req.method + ' ' + parsed.pathname)
       if (m) {
-        m.fn(req, res, m.params)
+        m.fn(req, res, m.params, q)
         return true
       } else {
         return false
