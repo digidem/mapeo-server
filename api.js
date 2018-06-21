@@ -16,11 +16,12 @@ function Api (osm, media, opts) {
   if (!opts) opts = {}
   this.osm = osm
   this.media = media
+  this.opts = opts
   var id = opts.id || 'MapeoDesktop_' + randombytes(8).toString('hex')
   var host = opts.host
   this.root = opts.root || '.'
   this.sync = sync(osm, media, {id, host})
-  this.browser = this.sync.listen(opts)
+  this.browser = opts.listen && this.sync.listen(opts)
 }
 
 // Observations
@@ -345,6 +346,7 @@ Api.prototype.stylesGet = function (req, res, m) {
 }
 
 Api.prototype.syncAnnounce = function (req, res, m) {
+  if (!this.browser) this.browser = this.sync.listen(this.opts)
   this.browser.update()
   res.end()
 }
