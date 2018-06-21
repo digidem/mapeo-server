@@ -363,11 +363,8 @@ Api.prototype.getSyncTargets = function (req, res, m) {
   res.end(JSON.stringify(this.sync.targets))
 }
 
-Api.prototype.syncToTarget = function (req, res, m) {
+Api.prototype.syncToTarget = function (req, res, m, params) {
   var self = this
-  var query = url.parse(req.url).query
-  if (!query) return onerror(res, 'Requires filename or host and port')
-  var params = querystring.parse(query)
   var progress
   if (params.filename) {
     progress = self.sync.replicateFromFile(params.filename)
