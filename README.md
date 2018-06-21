@@ -125,6 +125,10 @@ Fetch a single vector tile from the tileset `id` by an `x`,`y`,`z` coordinate.
 
 ### Sync
 
+#### `GET /sync/announce`
+
+Announce (or reannounce) the current server as a valid sync target.
+
 #### `GET /sync/targets`
 
 Returns list of available sync targets. Right now, only lists other services broadcasting on the local network through mdns using the 'mapeo-sync' key.

@@ -20,7 +20,7 @@ function Api (osm, media, opts) {
   var host = opts.host
   this.root = opts.root || '.'
   this.sync = sync(osm, media, {id, host})
-  this.sync.listen(opts)
+  this.browser = this.sync.listen(opts)
 }
 
 // Observations
@@ -342,6 +342,11 @@ Api.prototype.stylesGet = function (req, res, m) {
     res.statusCode = 404
     res.end()
   }
+}
+
+Api.prototype.syncAnnounce = function (req, res, m) {
+  this.browser.update()
+  res.end()
 }
 
 Api.prototype.getSyncTargets = function (req, res, m) {
