@@ -253,11 +253,18 @@ Api.prototype.mediaGet = function (req, res, m) {
   })
 }
 
-Api.prototype.mediaPost = function (req, res, m) {
+Api.prototype.mediaPut = function (req, res, m, q) {
+  if (!fs.existsSync(q.file)) {
+    res.statusCode = 404
+    res.end()
+    return
+  }
+
   var id = randombytes(16).toString('hex')
   var mime = req.headers['content-type']
   res.setHeader('content-type', 'application/json')
-  req.pipe(this.media.createWriteStream(id))
+
+  fs.createReadStream(q.file).pipe(this.media.createWriteStream(id))
     .once('finish', function () {
       res.end(JSON.stringify({id: id}))
     })

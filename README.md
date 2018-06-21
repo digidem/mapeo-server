@@ -77,12 +77,10 @@ Fetch a static file belonging to a preset with id `id`.
 
 ### Media
 
-#### `PUT /media`
+#### `PUT /media?file=PATH`
 
-Save a piece of media (photos only for now!) to the database. The raw media data
-should be provided. The client should set the `Content-Type` header
-appropriately (e.g. `image/jpg`) as a hint to the server, in case it has to do
-any post-processing.
+Save a piece of media (photos only), identified by the absolute file path `PATH`
+to the database. `PATH` should be URL encoded.
 
 A single JSON object is returned, with, at minimum, the `id` field set, to
 uniquely identify the uploaded media:
