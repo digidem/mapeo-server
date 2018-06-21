@@ -20,7 +20,7 @@ function Api (osm, media, opts) {
   var host = opts.host
   this.root = opts.root || '.'
   this.sync = sync(osm, media, {id, host})
-  this.sync.listen()
+  this.sync.listen(opts)
 }
 
 // Observations
