@@ -1,8 +1,6 @@
 var fs = require('fs')
-var querystring = require('querystring')
 var sync = require('mapeo-sync')
 var path = require('path')
-var url = require('url')
 var body = require('body/json')
 var randombytes = require('randombytes')
 var asar = require('asar')
@@ -194,7 +192,6 @@ Api.prototype.observationConvert = function (req, res, m) {
       value: obs
     })
 
-
     // 5. batch modification
     self.osm.batch(batch, function (err) {
       if (err) {
@@ -226,12 +223,9 @@ Api.prototype.presetsList = function (req, res, m) {
 }
 
 Api.prototype.presetsGet = function (req, res, m) {
-  var self = this
-  var pathname = url.parse(req.url).pathname
-
   ecstatic({
-    root: self.root,
-    handleError: false,
+    root: this.root,
+    handleError: false
   })(req, res)
 }
 
@@ -261,7 +255,6 @@ Api.prototype.mediaPut = function (req, res, m, q) {
   }
 
   var id = randombytes(16).toString('hex')
-  var mime = req.headers['content-type']
   res.setHeader('content-type', 'application/json')
 
   fs.createReadStream(q.file).pipe(this.media.createWriteStream(id))
@@ -322,12 +315,9 @@ Api.prototype.stylesGetStyle = function (req, res, m) {
 }
 
 Api.prototype.stylesGetStatic = function (req, res, m) {
-  var self = this
-  var pathname = url.parse(req.url).pathname
-
   ecstatic({
-    root: self.root,
-    handleError: false,
+    root: this.root,
+    handleError: false
   })(req, res)
 }
 
