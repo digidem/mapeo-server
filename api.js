@@ -335,6 +335,10 @@ Api.prototype.stylesGet = function (req, res, m) {
       case 'jpg': mime = 'image/jpg'; break
     }
     if (mime) res.setHeader('content-type', mime)
+
+    // Set gzip encoding on {mvt,pbf} tiles.
+    if (/mvt|pbf$/.test(m.ext)) res.setHeader('content-encoding', 'gzip')
+
     res.end(buf)
   } else {
     res.statusCode = 404
