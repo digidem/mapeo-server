@@ -182,7 +182,7 @@ var osm = Osm('./db')
 var media = blobstore('./media')
 
 var root = '/path/to/my/static/files' // optional
-var route = Router(osm, media, {root})
+var route = Router(osm, media, {staticRoot: root})
 
 var http = require('http')
 var server = http.createServer(function (req, res) {

@@ -17,7 +17,7 @@ function Api (osm, media, opts) {
   this.opts = opts
   var id = opts.id || 'MapeoDesktop_' + randombytes(8).toString('hex')
   var host = opts.host
-  this.root = opts.root || '.'
+  this.staticRoot = opts.staticRoot || '.'
   this.sync = sync(osm, media, {id, host})
   this.browser = opts.listen && this.sync.listen(opts)
 }
@@ -208,7 +208,7 @@ Api.prototype.observationConvert = function (req, res, m) {
 Api.prototype.presetsList = function (req, res, m) {
   var self = this
   res.setHeader('content-type', 'application/json')
-  fs.readdir(path.join(self.root, 'presets'), function (err, files) {
+  fs.readdir(path.join(self.staticRoot, 'presets'), function (err, files) {
     if (err) {
       res.statusCode = 500
       res.end(err.toString())
@@ -216,7 +216,7 @@ Api.prototype.presetsList = function (req, res, m) {
     }
     files = files
       .filter(function (filename) {
-        return fs.statSync(path.join(self.root, 'presets', filename)).isDirectory()
+        return fs.statSync(path.join(self.staticRoot, 'presets', filename)).isDirectory()
       })
     res.end(JSON.stringify(files))
   })
@@ -224,7 +224,7 @@ Api.prototype.presetsList = function (req, res, m) {
 
 Api.prototype.presetsGet = function (req, res, m) {
   ecstatic({
-    root: this.root,
+    staticRoot: this.staticRoot,
     handleError: false
   })(req, res)
 }
@@ -271,7 +271,7 @@ Api.prototype.mediaPut = function (req, res, m, q) {
 Api.prototype.stylesList = function (req, res, m) {
   var self = this
   res.setHeader('content-type', 'application/json')
-  fs.readdir(path.join(self.root, 'styles'), function (err, files) {
+  fs.readdir(path.join(self.staticRoot, 'styles'), function (err, files) {
     if (err) {
       res.statusCode = 500
       res.end(err.toString())
@@ -280,10 +280,10 @@ Api.prototype.stylesList = function (req, res, m) {
     files = files
       .filter(function (file) {
         var stat = fs.statSync(path.join('styles', file))
-        return stat.isDirectory() && fs.existsSync(path.join(self.root, 'styles', file, 'style.json'))
+        return stat.isDirectory() && fs.existsSync(path.join(self.staticRoot, 'styles', file, 'style.json'))
       })
       .map(function (dir) {
-        var str = fs.readFileSync(path.join(self.root, 'styles', dir, 'style.json'), 'utf-8')
+        var str = fs.readFileSync(path.join(self.staticRoot, 'styles', dir, 'style.json'), 'utf-8')
         if (str) {
           try {
             var json = JSON.parse(str)
@@ -311,19 +311,19 @@ Api.prototype.stylesList = function (req, res, m) {
 }
 
 Api.prototype.stylesGetStyle = function (req, res, m) {
-  serveStyleFile(path.join(this.root, 'styles', m.id, 'style.json'), m.id, req, res)
+  serveStyleFile(path.join(this.staticRoot, 'styles', m.id, 'style.json'), m.id, req, res)
 }
 
 Api.prototype.stylesGetStatic = function (req, res, m) {
   ecstatic({
-    root: this.root,
+    staticRoot: this.staticRoot,
     handleError: false
   })(req, res)
 }
 
 Api.prototype.stylesGet = function (req, res, m) {
   var self = this
-  var asarPath = path.join(self.root, 'styles', m.id, 'tiles', m.tileid + '.asar')
+  var asarPath = path.join(self.staticRoot, 'styles', m.id, 'tiles', m.tileid + '.asar')
 
   var filename = [m.z, m.y, m.x].join('/') + '.' + m.ext
   var buf = asarGet(asarPath, filename)
