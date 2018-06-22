@@ -279,7 +279,7 @@ Api.prototype.stylesList = function (req, res, m) {
     }
     files = files
       .filter(function (file) {
-        var stat = fs.statSync(path.join('styles', file))
+        var stat = fs.statSync(path.join(self.staticRoot, 'styles', file))
         return stat.isDirectory() && fs.existsSync(path.join(self.staticRoot, 'styles', file, 'style.json'))
       })
       .map(function (dir) {
