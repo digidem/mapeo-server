@@ -81,11 +81,6 @@ Api.prototype.observationCreate = function (req, res, m) {
       res.end('couldnt parse body json: ' + err.toString())
       return
     }
-    if (obs.lat === undefined || obs.lon === undefined) {
-      res.statusCode = 400
-      res.end('observation must have "lat" and "lon" fields')
-      return
-    }
 
     obs.type = 'observation'
     obs.created_at_timestamp = (new Date().getTime())
