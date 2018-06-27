@@ -61,25 +61,6 @@ test('observations: create + delete', function (t) {
   })
 })
 
-test('observations: create invalid', function (t) {
-  createServer(function (server, base) {
-    var href = base + '/observations'
-
-    var hq = hyperquest.post(href, {
-      headers: { 'content-type': 'application/json' }
-    })
-
-    // http response
-    hq.once('response', function (res) {
-      t.equal(res.statusCode, 400, 'create 400 bad')
-      server.close()
-      t.end()
-    })
-
-    hq.end(JSON.stringify({dog: 5, lon: -0.123}))
-  })
-})
-
 test('observations: create + get', function (t) {
   createServer(function (server, base, osm, media) {
     osm.create({lat:1,lon:2,type:'observation'}, function (err, id, node) {
