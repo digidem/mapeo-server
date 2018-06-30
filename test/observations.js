@@ -181,6 +181,17 @@ test('observations: create + update', function (t) {
   })
 })
 
+test('observations: update with invalid id fails gracefully', function (t) {
+  createServer(function (server, base, osm, media) {
+    putJson(`${base}/observations/null`, function (err, elm) {
+      t.ok(err)
+      server.close()
+      t.end()
+    })
+  })
+
+})
+
 test('observations: create + convert', function (t) {
   createServer(function (server, base, osm, media) {
     var og = {

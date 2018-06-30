@@ -126,6 +126,11 @@ Api.prototype.observationUpdate = function (req, res, m) {
         opts.links = obses[0].id
       }
       var old = obses[0]
+      if (!old) {
+        res.statusCode = 400
+        res.end('observation with id not found')
+        return
+      }
       var newObs = Object.assign(old, obs)
       self.osm.put(m.id, newObs, opts, function (err, node) {
         if (err) {
