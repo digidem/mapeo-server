@@ -387,7 +387,7 @@ Api.prototype.syncToTarget = function (req, res, m, params) {
   }
 
   function onerror (res, err) {
-    res.statusCode = 400
+    res.statusCode = 500
     var str = JSON.stringify({topic: 'replication-error', message: err.message || err}) + '\n'
     res.end(str)
   }
