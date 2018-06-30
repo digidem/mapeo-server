@@ -167,8 +167,11 @@ test('observations: create + update', function (t) {
           var obs = JSON.parse(body)
           var href = `${base}/observations/${obs.id}`
           check(t, href, [obs], function () {
-            server.close()
-            t.end()
+            var href = `${base}/observations`
+            check(t, href, [obs], function () {
+              server.close()
+              t.end()
+            })
           })
         }))
       })

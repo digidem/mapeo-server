@@ -14,7 +14,7 @@ var server = http.createServer(function (req, res) {
   if (req.url === '/') {
     return ecstatic({root:__dirname})(req, res)
   }
-  if (!route(req, res)) {
+  if (!route.handle(req, res)) {
     res.statusCode = 404
     res.end('not found\n')
   }
