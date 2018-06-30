@@ -119,19 +119,23 @@ Api.prototype.observationUpdate = function (req, res, m) {
         return
       }
       var opts = {}
-      if (obses.length > 1) {
-        obses = obses.sort(function (a, b) {
-          return b.created_at_timestamp - a.created_at_timestamp
-        })
-        opts.links = obses[0].id
-      }
       var old = obses[0]
       if (!old) {
         res.statusCode = 400
         res.end('observation with id not found')
         return
       }
-      var newObs = Object.assign(old, obs)
+      if (obses.length > 1) {
+        obses = obses.sort(function (a, b) {
+          return b.created_at_timestamp - a.created_at_timestamp
+        })
+        opts.links = old.id
+      }
+      var newObs = Object.assign(old, {
+        properties: obs.properties,
+        lat: obs.lat,
+        lon: obs.lon
+      })
       self.osm.put(m.id, newObs, opts, function (err, node) {
         if (err) {
           res.statusCode = 500
