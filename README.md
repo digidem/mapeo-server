@@ -77,24 +77,34 @@ Fetch a static file belonging to a preset with id `id`.
 
 ### Media
 
-#### `PUT /media?file=PATH`
+#### `PUT /media?file=PATH&thumbnail=PATH
 
 Save a piece of media (photos only), identified by the absolute file path `PATH`
 to the database. `PATH` should be URL encoded.
 
-A single JSON object is returned, with, at minimum, the `id` field set, to
-uniquely identify the uploaded media:
+Optionally, a thumbnail file path may also be included.
+
+A single JSON object is returned, with the media's unique `id`:
 
 ```json
 {
-  "id": "225961fb85d82312e8c0ed511",
-  "type": "image/jpg"
+  "id": "225961fb85d82312e8c0ed511.jpg",
 }
 ```
 
-#### `GET /media/:id`
+To fetch the thumbnail later, one would hit the route `GET /media/thumbnail/225961fb85d82312e8c0ed511.jpg`.
 
-Retrieve a piece of media (photos only for now) by its `id`.
+#### `GET /media/:type/:id`
+
+Retrieve a piece of media (photos only for now) by its `id`. Valid `type`s are `original` and `thumbnail`. e.g.
+
+```
+GET /media/thumbnail/225961fb85d82312e8c0ed511.jpg
+```
+or
+```
+GET /media/original/225961fb85d82312e8c0ed511.jpg
+```
 
 ### Mapbox Styles & Tiles
 
