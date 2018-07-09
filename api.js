@@ -236,8 +236,9 @@ Api.prototype.presetsGet = function (req, res, m) {
 // Media
 Api.prototype.mediaGet = function (req, res, m) {
   var self = this
+  var id = m.type + '/' + m.id
 
-  this.media.exists(m.id, function (err, exists) {
+  this.media.exists(id, function (err, exists) {
     if (err) {
       res.statusCode = 500
       res.end('ERROR: ' + err.toString())
@@ -246,7 +247,7 @@ Api.prototype.mediaGet = function (req, res, m) {
       res.end()
     } else {
       res.setHeader('content-type', 'image/jpeg')
-      self.media.createReadStream(m.id).pipe(res)
+      self.media.createReadStream(id).pipe(res)
     }
   })
 }
@@ -258,17 +259,42 @@ Api.prototype.mediaPut = function (req, res, m, q) {
     return
   }
 
-  var id = randombytes(16).toString('hex')
+  var self = this
+
+  var ext = path.extname(q.file)
+  var id = randombytes(16).toString('hex') + ext
   res.setHeader('content-type', 'application/json')
 
-  fs.createReadStream(q.file).pipe(this.media.createWriteStream(id))
-    .once('finish', function () {
-      res.end(JSON.stringify({id: id}))
-    })
-    .once('error', function (err) {
+  var mediaPath = 'original/' + id
+  var thumbnailPath = 'thumbnail/' + id
+
+  function copyFileTo (file, to, cb) {
+    fs.createReadStream(file).pipe(self.media.createWriteStream(to))
+      .once('finish', cb)
+      .once('error', cb)
+  }
+
+  copyFileTo(q.file, mediaPath, function (err) {
+    if (err) {
       res.statusCode = 500
       res.end(err.toString())
+      return
+    }
+
+    if (!q.thumbnail) {
+      res.end(JSON.stringify({id: id, original: mediaPath}))
+      return
+    }
+
+    copyFileTo(q.thumbnail, thumbnailPath, function (err) {
+      if (err) {
+        res.statusCode = 500
+        res.end(err.toString())
+        return
+      }
+      res.end(JSON.stringify({id: id, original: mediaPath, thumbnail: thumbnailPath}))
     })
+  })
 }
 
 // Tiles
