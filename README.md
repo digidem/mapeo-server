@@ -84,13 +84,11 @@ to the database. `PATH` should be URL encoded.
 
 Optionally, a thumbnail file path may also be included.
 
-A single JSON object is returned, with the base `id`, the original image's ID, and, if a thumbnail as given, the thumbnail ID:
+A single JSON object is returned, with the media's unique `id`:
 
 ```json
 {
   "id": "225961fb85d82312e8c0ed511.jpg",
-  "original": "original/225961fb85d82312e8c0ed511.jpg",
-  "thumbnail": "thumbnail/225961fb85d82312e8c0ed511.jpg"
 }
 ```
 
@@ -98,7 +96,15 @@ To fetch the thumbnail later, one would hit the route `GET /media/thumbnail/2259
 
 #### `GET /media/:type/:id`
 
-Retrieve a piece of media (photos only for now) by its `id`. Valid `type`s are `original` and `thumbnail`.
+Retrieve a piece of media (photos only for now) by its `id`. Valid `type`s are `original` and `thumbnail`. e.g.
+
+```
+GET /media/thumbnail/225961fb85d82312e8c0ed511.jpg
+```
+or
+```
+GET /media/original/225961fb85d82312e8c0ed511.jpg
+```
 
 ### Mapbox Styles & Tiles
 

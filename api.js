@@ -246,15 +246,21 @@ Api.prototype.mediaGet = function (req, res, m) {
       res.statusCode = 404
       res.end()
     } else {
-      res.setHeader('content-type', 'image/jpeg')
+      if (m.id.endsWith('.jpg')) res.setHeader('content-type', 'image/jpeg')
+      else if (m.id.endsWith('.png')) res.setHeader('content-type', 'image/png')
       self.media.createReadStream(id).pipe(res)
     }
   })
 }
 
 Api.prototype.mediaPut = function (req, res, m, q) {
-  if (!fs.existsSync(q.file)) {
-    res.statusCode = 404
+  if (!q.file || !fs.existsSync(q.file)) {
+    res.statusCode = 400
+    res.end()
+    return
+  }
+  if (q.thumbnail && !fs.existsSync(q.thumbnail)) {
+    res.statusCode = 400
     res.end()
     return
   }
@@ -274,27 +280,35 @@ Api.prototype.mediaPut = function (req, res, m, q) {
       .once('error', cb)
   }
 
+  var pending = 1
+  if (q.thumbnail) pending++
+
+  // Copy original media
   copyFileTo(q.file, mediaPath, function (err) {
     if (err) {
       res.statusCode = 500
       res.end(err.toString())
       return
     }
+    if (!--pending) done()
+  })
 
-    if (!q.thumbnail) {
-      res.end(JSON.stringify({id: id, original: mediaPath}))
-      return
-    }
-
+  // Copy thumbnail
+  if (q.thumbnail) {
     copyFileTo(q.thumbnail, thumbnailPath, function (err) {
       if (err) {
         res.statusCode = 500
         res.end(err.toString())
         return
       }
-      res.end(JSON.stringify({id: id, original: mediaPath, thumbnail: thumbnailPath}))
+      if (!--pending) done()
     })
-  })
+  }
+
+  function done () {
+    if (pending) return
+    res.end(JSON.stringify({id: id}))
+  }
 }
 
 // Tiles
