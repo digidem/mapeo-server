@@ -24,7 +24,7 @@
     "asar": "^0.14.3",
     "body": "^5.1.0",
     "ecstatic": "^3.2.0",
-    "mapeo-sync": "^1.0.2",
+    "mapeo-sync": "^2.0.0",
     "randombytes": "^2.0.6",
     "routes": "^2.1.0",
     "xtend": "^4.0.1"
