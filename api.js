@@ -358,7 +358,7 @@ Api.prototype.syncAnnounce = function (req, res, m) {
 
 Api.prototype.getSyncTargets = function (req, res, m) {
   res.setHeader('Content-Type', 'application/json')
-  res.end(JSON.stringify(this.sync.targets))
+  res.end(JSON.stringify(this.sync.targets()))
 }
 
 Api.prototype.syncToTarget = function (req, res, m, params) {
@@ -371,9 +371,9 @@ Api.prototype.syncToTarget = function (req, res, m, params) {
     progress = self.sync.syncToTarget(params)
   } else return onerror(res, 'Requires filename or host and port')
 
-  send(res, 'replication-started')
   function onprogress (data) {
-    send(res, 'replication-progress', data)
+    if (data === 'replication-started') send(res, 'replication-started')
+    else send(res, 'replication-progress', data)
   }
   progress.on('progress', onprogress)
   progress.on('error', onend)
