@@ -405,10 +405,9 @@ Api.prototype.syncToTarget = function (req, res, m, params) {
   var self = this
   var progress
   if (params.filename) {
-    progress = self.sync.replicateFromFile(params.filename)
+    progress = self.sync.replicateFromFile(params.filename, self.opts)
   } else if (params.host && params.port) {
-    // TODO: set 'media: { mode: 'pull' }' when this is run by phone
-    progress = self.sync.syncToTarget(params)
+    progress = self.sync.syncToTarget(params, self.opts)
   } else return onerror(res, 'Requires filename or host and port')
 
   function onprogress (data) {
