@@ -3,11 +3,18 @@ var blob = require('abstract-blob-store')
 var http = require('http')
 var Router = require('..')
 
-module.exports = function (cb) {
+module.exports = function (opts, cb) {
+  if (!cb) {
+    cb = opts
+    opts = { port: 5000 }
+  }
   var osm = Osm()
   var media = blob()
+  media._list = function (cb) {
+    process.nextTick(cb, null, Object.keys(this.data))
+  }
 
-  var router = Router(osm, media)
+  var router = Router(osm, media, opts)
 
   var server = http.createServer(function (req, res) {
     if (router.handle(req, res)) {
@@ -19,7 +26,7 @@ module.exports = function (cb) {
   server.on('close', function () {
     router.api.close()
   })
-  server.listen(5000, function () {
-    cb(server, 'http://localhost:5000', osm, media)
+  server.listen(opts.port, function () {
+    cb(server, `http://localhost:${opts.port}`, osm, media, router)
   })
 }
