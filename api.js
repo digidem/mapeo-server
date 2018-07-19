@@ -42,6 +42,7 @@ Api.prototype.observationList = function (req, res, m) {
     .on('data', function (row) {
       Object.keys(row.values).forEach(function (version) {
         var obs = row.values[version].value
+        if (!obs) return
         if (obs.type !== 'observation') return
         obs.id = row.key
         obs.version = version
