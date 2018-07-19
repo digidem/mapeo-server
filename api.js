@@ -132,11 +132,8 @@ Api.prototype.observationUpdate = function (req, res, m) {
         })
         opts.links = old.id
       }
-      var newObs = Object.assign(old, {
-        properties: obs.properties,
-        lat: obs.lat,
-        lon: obs.lon
-      })
+      var newObs = Object.assign(old, {})
+      delete newObs.version
       self.osm.put(m.id, newObs, opts, function (err, node) {
         if (err) {
           res.statusCode = 500
