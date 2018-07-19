@@ -9,6 +9,8 @@ var xtend = require('xtend')
 
 module.exports = Api
 
+var VALID_PROPS = ['lon', 'lat', 'attachments', 'tags']
+
 function Api (osm, media, opts) {
   if (!(this instanceof Api)) return new Api(osm, media, opts)
   if (!opts) opts = {}
@@ -133,6 +135,7 @@ Api.prototype.observationUpdate = function (req, res, m) {
         opts.links = old.id
       }
       var newObs = Object.assign(old, {})
+      VALID_PROPS.forEach(function (prop) { newObs[prop] = obs[prop] })
       delete newObs.version
       self.osm.put(m.id, newObs, opts, function (err, node) {
         if (err) {
