@@ -276,9 +276,8 @@ Api.prototype.mediaPut = function (req, res, m, q) {
   var thumbnailPath = 'thumbnail/' + id
 
   function copyFileTo (file, to, cb) {
-    fs.createReadStream(file).pipe(self.media.createWriteStream(to))
-      .once('finish', cb)
-      .once('error', cb)
+    var ws = self.media.createWriteStream(to, cb)
+    fs.createReadStream(file).pipe(ws)
   }
 
   var pending = 1
