@@ -11,7 +11,7 @@ module.exports = function (osm, media, opts) {
   router.addRoute('GET /observations',         api.observationList.bind(api))
   router.addRoute('GET /observations/:id',     api.observationGet.bind(api))
   router.addRoute('POST /observations',        api.observationCreate.bind(api))
-  router.addRoute('PUT /observations/:id',     api.observationUpdate.bind(api))
+  router.addRoute('PUT /observations/:version',api.observationUpdate.bind(api))
   router.addRoute('DELETE /observations/:id',  api.observationDelete.bind(api))
   router.addRoute('PUT /observations/to-element/:id', api.observationConvert.bind(api))
 

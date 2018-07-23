@@ -137,47 +137,71 @@ test('observations: create + list', function (t) {
   })
 })
 
-test('observations: create + update', function (t) {
-  createServer(function (server, base, osm, media) {
-    var og = {
-      lat: 1,
-      lon: 2,
-      type: 'observation',
-      created_at_timestamp: new Date().getTime()
-    }
-    osm.create(og, function (err, id, node) {
-      t.error(err)
+test('observations: update lat/lon', function (t) {
+  var original = {
+    lat: 1,
+    lon: 2,
+    type: 'observation',
+    created_at_timestamp: new Date().getTime()
+  }
+  var update = {
+    lat: 1.5,
+    lon: 2
+  }
+  var expected = {
+    lat: 1.5,
+    lon: 2,
+    type: 'observation',
+    created_at_timestamp: original.created_at_timestamp
+  }
+  testUpdateObservation(t, original, update, expected, function () {
+    t.end()
+  })
+})
 
-      var newData = {
-        lat: 1.5,
-        lon: 2
-      }
+test('observations: update ref', function (t) {
+  var original = {
+    lat: 1,
+    lon: 2,
+    type: 'observation',
+    ref: 12094,
+    created_at_timestamp: new Date().getTime()
+  }
+  var update = {
+    ref: 12111
+  }
+  var expected = {
+    lat: 1,
+    lon: 2,
+    type: 'observation',
+    ref: 12111,
+    created_at_timestamp: original.created_at_timestamp
+  }
+  testUpdateObservation(t, original, update, expected, function () {
+    t.end()
+  })
+})
 
-      var href = `${base}/observations/${id}`
-
-      var hq = hyperquest.put(href, {
-        headers: { 'content-type': 'application/json' }
-      })
-
-      hq.on('response', function (res) {
-        t.equal(res.statusCode, 200, 'create 200 ok')
-        t.equal(res.headers['content-type'], 'application/json', 'type correct')
-
-        hq.pipe(concat({ encoding: 'string' }, function (body) {
-          var obs = JSON.parse(body)
-          var href = `${base}/observations/${obs.id}`
-          check(t, href, [obs], function () {
-            var href = `${base}/observations`
-            check(t, href, [obs], function () {
-              server.close()
-              t.end()
-            })
-          })
-        }))
-      })
-
-      hq.end(JSON.stringify(newData))
-    })
+test('observations: update tags', function (t) {
+  var original = {
+    lat: 1,
+    lon: 2,
+    type: 'observation',
+    tags: { hey: 'you' },
+    created_at_timestamp: new Date().getTime()
+  }
+  var update = {
+    tags: { foo: 'bar', hey: 'there' }
+  }
+  var expected = {
+    lat: 1,
+    lon: 2,
+    type: 'observation',
+    tags: { foo: 'bar', hey: 'there' },
+    created_at_timestamp: original.created_at_timestamp
+  }
+  testUpdateObservation(t, original, update, expected, function () {
+    t.end()
   })
 })
 
@@ -310,4 +334,38 @@ function delJson (href, cb) {
     }
   })
   hq.end()
+}
+
+function testUpdateObservation (t, orig, update, expected, cb) {
+  createServer(function (server, base, osm, media) {
+    osm.create(orig, function (err, id, node) {
+      t.error(err)
+
+      var href = `${base}/observations/${node.key}`
+      var hq = hyperquest.put(href, {
+        headers: { 'content-type': 'application/json' }
+      })
+
+      hq.on('response', function (res) {
+        t.equal(res.statusCode, 200, 'create 200 ok')
+        t.equal(res.headers['content-type'], 'application/json', 'type correct')
+
+        hq.pipe(concat({ encoding: 'string' }, function (body) {
+          var obs = JSON.parse(body)
+
+          var obsCopy = Object.assign({}, obs)
+          delete obsCopy.id
+          delete obsCopy.version
+          t.deepEquals(obsCopy, expected)
+
+          var href = `${base}/observations/${obs.id}`
+          check(t, href, [obs], function () {
+            server.close(cb)
+          })
+        }))
+      })
+
+      hq.end(JSON.stringify(update))
+    })
+  })
 }

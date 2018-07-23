@@ -81,6 +81,8 @@ Api.prototype.observationCreate = function (req, res, m) {
       return
     }
 
+    // TODO(noffle): add whitelist for specifically allowed properties
+
     obs.type = 'observation'
     obs.created_at_timestamp = (new Date().getTime())
 
@@ -100,53 +102,49 @@ Api.prototype.observationCreate = function (req, res, m) {
 
 Api.prototype.observationUpdate = function (req, res, m) {
   var self = this
-  this.osm.get(m.id, function (err, obses) {
+  this.osm.getByVersion(m.version, function (err, oldObs) {
     if (err) {
       res.statusCode = 500
       res.end('failed to update observation:' + err.toString())
       return
     }
-    if (obses.length === 0) {
+    if (!oldObs) {
       res.statusCode = 500
-      res.end('failed to update observation: No observation found with id ' + m.id)
+      res.end('failed to update observation: No observation found with version ' + m.version)
       return
     }
-    obses = flatObs(m.id, obses)
+    // clear id and version
+    var id = oldObs.id
+    delete oldObs.id
+    delete oldObs.version
 
-    body(req, function (err, obs) {
+    body(req, function (err, newObs) {
       if (err) {
         res.statusCode = 400
         res.end('couldnt parse body json: ' + err.toString())
         return
       }
-      var opts = {}
-      var old = obses[0]
-      if (!old) {
-        res.statusCode = 400
-        res.end('observation with id not found')
-        return
+      // link back to the previous observation
+      var opts = {
+        links: m.version
       }
-      if (obses.length > 1) {
-        obses = obses.sort(function (a, b) {
-          return b.created_at_timestamp - a.created_at_timestamp
-        })
-        opts.links = old.id
-      }
-      var newObs = Object.assign(old, {
-        properties: obs.properties,
-        lat: obs.lat,
-        lon: obs.lon
+      var finalObs = Object.assign(oldObs, {
+        lat: newObs.lat || oldObs.lat,
+        lon: newObs.lon || oldObs.lon,
+        ref: newObs.ref || oldObs.ref,
+        attachments: newObs.attachments || oldObs.attachments,
+        tags: newObs.tags || oldObs.attachments
       })
-      self.osm.put(m.id, newObs, opts, function (err, node) {
+      self.osm.put(id, finalObs, opts, function (err, node) {
         if (err) {
           res.statusCode = 500
           res.end('failed to update observation:' + err.toString())
           return
         }
         res.setHeader('content-type', 'application/json')
-        newObs.id = node.value.k
-        newObs.version = node.key
-        res.end(JSON.stringify(newObs))
+        finalObs.id = node.value.k
+        finalObs.version = node.key
+        res.end(JSON.stringify(finalObs))
       })
     })
   })
