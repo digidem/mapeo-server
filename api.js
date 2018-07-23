@@ -6,6 +6,7 @@ var randombytes = require('randombytes')
 var asar = require('asar')
 var ecstatic = require('ecstatic')
 var xtend = require('xtend')
+var defork = require('osm-p2p-defork')
 
 module.exports = Api
 
@@ -23,6 +24,7 @@ function Api (osm, media, opts) {
 }
 
 // Observations
+// TODO: We should only delete the version the client knows about, not any forks
 Api.prototype.observationDelete = function (req, res, m) {
   res.setHeader('content-type', 'application/json')
   this.osm.del(m.id, function (err) {
@@ -80,20 +82,28 @@ Api.prototype.observationCreate = function (req, res, m) {
       res.end('couldnt parse body json: ' + err.toString())
       return
     }
+    try {
+      validateObservation(obs)
+    } catch (err) {
+      res.statusCode = 400
+      res.end('Invalid observation: ' + err.toString())
+    }
+    const newObs = whitelistProps(obs)
+    newObs.type = 'observation'
+    newObs.timestamp = (new Date().toISOString())
 
-    obs.type = 'observation'
-    obs.created_at_timestamp = (new Date().getTime())
-
-    self.osm.create(obs, function (err, _, node) {
+    // TODO: If the user passes a placeholder id for the observation created,
+    // return that id on the error, and as old_id prop on the returned observation
+    self.osm.create(newObs, function (err, _, node) {
       if (err) {
         res.statusCode = 500
         res.end('failed to create observation: ' + err.toString())
         return
       }
       res.setHeader('content-type', 'application/json')
-      obs.id = node.value.k
-      obs.version = node.key
-      res.end(JSON.stringify(obs))
+      newObs.id = node.value.k
+      newObs.version = node.key
+      res.end(JSON.stringify(newObs))
     })
   })
 }
@@ -132,11 +142,9 @@ Api.prototype.observationUpdate = function (req, res, m) {
         })
         opts.links = old.id
       }
-      var newObs = Object.assign(old, {
-        properties: obs.properties,
-        lat: obs.lat,
-        lon: obs.lon
-      })
+      var newObs = Object.assign(old, {})
+      VALID_PROPS.forEach(function (prop) { newObs[prop] = obs[prop] })
+      delete newObs.version
       self.osm.put(m.id, newObs, opts, function (err, node) {
         if (err) {
           res.statusCode = 500
@@ -481,4 +489,35 @@ function flatObs (id, obses) {
     obs.version = version
     return obs
   })
+}
+
+function validateObservation (obs) {
+  if (!obs) throw new Error('Observation is undefined')
+  if (!obs.type === 'observation') throw new Error('Observation must be of type `observation`')
+  if (obs.attachments) {
+    if (!Array.isArray(obs.attachments)) throw new Error('Observation attachments must be an array')
+    obs.attachments.forEach(function (att, i) {
+      if (!att) throw new Error('Attachment at index `' + i + '` is undefined')
+      if (typeof att.id !== 'string') throw new Error('Attachment must have a string id property (at index `' + i + '`)')
+    })
+  }
+  if (typeof obs.lat !== 'undefined' || typeof obs.lon !== 'undefined') {
+    if (typeof obs.lat === 'undefined' || typeof obs.lon === 'undefined') {
+      throw new Error('If one of the lon or lat properties is defined, but the other is undefined')
+    }
+    if (typeof obs.lat !== 'number' || typeof obs.lon !== 'number') {
+      throw new Error('lon and lat must be a number')
+    }
+  }
+}
+
+var VALID_PROPS = ['lon', 'lat', 'attachments', 'tags']
+
+// Filter whitelisted props
+function whitelistProps (obs) {
+  var newObs = {}
+  VALID_PROPS.forEach(function (prop) {
+    newObs[prop] = obs[prop]
+  })
+  return newObs
 }
