@@ -104,88 +104,69 @@ Api.prototype.observationCreate = function (req, res, m) {
 
 Api.prototype.observationUpdate = function (req, res, m) {
   var self = this
-  this.osm.get(m.id, function (err, heads) {
+
+  body(req, function (err, newObs) {
     if (err) {
-      res.statusCode = 500
-      res.end('failed to update observation:' + err.toString())
-      return
-    }
-    if (heads.length === 0) {
-      res.statusCode = 500
-      res.end('failed to update observation: No observation found with id ' + m.id)
-      return
-    }
-    heads = flatObs(m.id, heads)
-    var old = heads[0]
-    if (!old) {
       res.statusCode = 400
-      res.end('observation with id not found')
+      res.end('couldnt parse body json: ' + err.toString())
       return
     }
 
-    body(req, function (err, newObs) {
-      if (err) {
+    if (typeof newObs.version !== 'string') {
+      res.statusCode = 400
+      res.end('the given observation must have a "version" set')
+      return
+    }
+
+    if (newObs.id !== m.id) {
+      res.statusCode = 400
+      res.end('the given observation\'s id doesn\'t match the id url param')
+      return
+    }
+
+    try {
+      validateObservation(newObs)
+    } catch (err) {
+      res.statusCode = 400
+      res.end('Malformed observation: ' + err.toString())
+      return
+    }
+
+    self.osm.getByVersion(newObs.version, function (err, obs) {
+      if (err && !err.notFound) {
+        res.statusCode = 500
+        res.end('internal error: ' + err.toString())
+        return
+      }
+      if (err && err.notFound) {
         res.statusCode = 400
-        res.end('couldnt parse body json: ' + err.toString())
+        res.end('no such observation with that version')
+        return
+      }
+      if (obs.id !== m.id) {
+        res.statusCode = 400
+        res.end('observation with that version doesn\'t match the given id')
         return
       }
 
-      if (typeof newObs.version !== 'string') {
-        res.statusCode = 400
-        res.end('the given observation must have a "version" set')
-        return
+      var opts = {
+        links: [newObs.version]
       }
 
-      if (newObs.id !== m.id) {
-        res.statusCode = 400
-        res.end('the given observation\'s id doesn\'t match the id url param')
-        return
-      }
+      var finalObs = whitelistProps(newObs)
+      finalObs.type = 'observation'
+      finalObs.timestamp = new Date().toISOString()
 
-      try {
-        validateObservation(newObs)
-      } catch (err) {
-        res.statusCode = 400
-        res.end('Malformed observation: ' + err.toString())
-        return
-      }
-
-      self.osm.getByVersion(newObs.version, function (err, obs) {
-        if (err && !err.notFound) {
+      self.osm.put(m.id, finalObs, opts, function (err, node) {
+        if (err) {
           res.statusCode = 500
-          res.end('internal error: ' + err.toString())
+          res.end('failed to update observation:' + err.toString())
           return
         }
-        if (err && err.notFound) {
-          res.statusCode = 400
-          res.end('no such observation with that version')
-          return
-        }
-        if (obs.id !== m.id) {
-          res.statusCode = 400
-          res.end('observation with that version doesn\'t match the given id')
-          return
-        }
-
-        var opts = {
-          links: [newObs.version]
-        }
-
-        var finalObs = whitelistProps(newObs)
-        finalObs.type = 'observation'
-        finalObs.timestamp = new Date().toISOString()
-
-        self.osm.put(m.id, finalObs, opts, function (err, node) {
-          if (err) {
-            res.statusCode = 500
-            res.end('failed to update observation:' + err.toString())
-            return
-          }
-          res.setHeader('content-type', 'application/json')
-          finalObs.id = node.value.k
-          finalObs.version = node.key
-          res.end(JSON.stringify(finalObs))
-        })
+        res.setHeader('content-type', 'application/json')
+        finalObs.id = node.value.k
+        finalObs.version = node.key
+        res.end(JSON.stringify(finalObs))
       })
     })
   })
