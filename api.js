@@ -82,22 +82,26 @@ Api.prototype.observationCreate = function (req, res, m) {
       res.end('couldnt parse body json: ' + err.toString())
       return
     }
+    try {
+      validateObservation(obs)
+    } catch (err) {
+      res.statusCode = 400
+      res.end('Invalid observation: ' + err.toString())
+    }
+    const newObs = whitelistProps(obs)
+    newObs.type = 'observation'
+    newObs.timestamp = (new Date().toISOString())
 
-    // TODO(noffle): add whitelist for specifically allowed properties
-
-    obs.type = 'observation'
-    obs.timestamp = (new Date().toISOString())
-
-    self.osm.create(obs, function (err, _, node) {
+    self.osm.create(newObs, function (err, _, node) {
       if (err) {
         res.statusCode = 500
         res.end('failed to create observation: ' + err.toString())
         return
       }
       res.setHeader('content-type', 'application/json')
-      obs.id = node.value.k
-      obs.version = node.key
-      res.end(JSON.stringify(obs))
+      newObs.id = node.value.k
+      newObs.version = node.key
+      res.end(JSON.stringify(newObs))
     })
   })
 }
