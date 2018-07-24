@@ -150,24 +150,42 @@ Api.prototype.observationUpdate = function (req, res, m) {
         return
       }
 
-      var opts = {
-        links: [newObs.version]
-      }
-
-      var finalObs = whitelistProps(newObs)
-      finalObs.type = 'observation'
-      finalObs.timestamp = new Date().toISOString()
-
-      self.osm.put(m.id, finalObs, opts, function (err, node) {
-        if (err) {
+      self.osm.getByVersion(newObs.version, function (err, obs) {
+        if (err && !err.notFound) {
           res.statusCode = 500
-          res.end('failed to update observation:' + err.toString())
+          res.end('internal error: ' + err.toString())
           return
         }
-        res.setHeader('content-type', 'application/json')
-        finalObs.id = node.value.k
-        finalObs.version = node.key
-        res.end(JSON.stringify(finalObs))
+        if (err && err.notFound) {
+          res.statusCode = 400
+          res.end('no such observation with that version')
+          return
+        }
+        if (obs.id !== m.id) {
+          res.statusCode = 400
+          res.end('observation with that version doesn\'t match the given id')
+          return
+        }
+
+        var opts = {
+          links: [newObs.version]
+        }
+
+        var finalObs = whitelistProps(newObs)
+        finalObs.type = 'observation'
+        finalObs.timestamp = new Date().toISOString()
+
+        self.osm.put(m.id, finalObs, opts, function (err, node) {
+          if (err) {
+            res.statusCode = 500
+            res.end('failed to update observation:' + err.toString())
+            return
+          }
+          res.setHeader('content-type', 'application/json')
+          finalObs.id = node.value.k
+          finalObs.version = node.key
+          res.end(JSON.stringify(finalObs))
+        })
       })
     })
   })

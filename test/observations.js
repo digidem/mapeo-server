@@ -209,7 +209,72 @@ test('observations: update with invalid id fails gracefully', function (t) {
       t.end()
     })
   })
+})
 
+test('observations: try to update with bad version', function (t) {
+  createServer(function (server, base, osm, media) {
+    var obs = {
+      type: 'observation',
+      lat: 5,
+      lon: 6
+    }
+    osm.create(obs, function (err, id, node) {
+      t.error(err)
+
+      var href = `${base}/observations/${id}`
+      var hq = hyperquest.put(href, {
+        headers: { 'content-type': 'application/json' }
+      })
+
+      var update = {
+        type: 'observation',
+        lat: 10,
+        lon: 12,
+        version: 'fake version',
+        id: id
+      }
+
+      hq.on('response', function (res) {
+        t.equal(res.statusCode, 400, 'bad request 400')
+        server.close(function () { t.end() })
+      })
+
+      hq.end(JSON.stringify(update))
+    })
+  })
+})
+
+test('observations: try to update with bad id', function (t) {
+  createServer(function (server, base, osm, media) {
+    var obs = {
+      type: 'observation',
+      lat: 5,
+      lon: 6
+    }
+    osm.create(obs, function (err, id, node) {
+      t.error(err)
+
+      var href = `${base}/observations/${id}`
+      var hq = hyperquest.put(href, {
+        headers: { 'content-type': 'application/json' }
+      })
+
+      var update = {
+        type: 'observation',
+        lat: 10,
+        lon: 12,
+        version: node.key,
+        id: 'fake id'
+      }
+
+      hq.on('response', function (res) {
+        t.equal(res.statusCode, 400, 'bad request 400')
+        server.close(function () { t.end() })
+      })
+
+      hq.end(JSON.stringify(update))
+    })
+  })
 })
 
 test('observations: create + convert', function (t) {
