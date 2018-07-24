@@ -130,6 +130,18 @@ Api.prototype.observationUpdate = function (req, res, m) {
         return
       }
 
+      if (typeof newObs.version !== 'string') {
+        res.statusCode = 400
+        res.end('the given observation must have a "version" set')
+        return
+      }
+
+      if (newObs.id !== m.id) {
+        res.statusCode = 400
+        res.end('the given observation\'s id doesn\'t match the id url param')
+        return
+      }
+
       try {
         validateObservation(newObs)
       } catch (err) {
@@ -138,16 +150,9 @@ Api.prototype.observationUpdate = function (req, res, m) {
         return
       }
 
-      var opts = {}
-
-      // Get the newest observation head by timestamp. Replace it by linking
-      // to its version.
-      if (heads.length > 1) {
-        old = heads.sort(function (a, b) {
-          return b.timestamp - a.timestamp
-        })[0]
+      var opts = {
+        links: [newObs.version]
       }
-      opts.links = [old.version]
 
       var finalObs = whitelistProps(newObs)
       finalObs.type = 'observation'

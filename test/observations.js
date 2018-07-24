@@ -342,6 +342,9 @@ function testUpdateObservation (t, orig, update, expected, cb) {
         headers: { 'content-type': 'application/json' }
       })
 
+      update.version = node.key
+      update.id = id
+
       hq.on('response', function (res) {
         t.equal(res.statusCode, 200, 'create 200 ok')
         t.equal(res.headers['content-type'], 'application/json', 'type correct')

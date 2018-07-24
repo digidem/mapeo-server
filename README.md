@@ -49,15 +49,13 @@ multiple results.
 
 #### `PUT /observations/:id`
 
-Update an observation by its `id` by providing a JSON object. Only the following fields can be modified:
+Update an observation by its `id` by providing a JSON object representing the new observation. `id` and `version` *must* be set. Only the following fields can be modified:
 
 - `lat`
 - `lon`
 - `ref`
 - `attachments`
 - `tags`
-
-If there are multiple heads for the element at `id`, only the head with the newest timestamp will be modified.
 
 #### `PUT /observations/to-element/:id`
 
