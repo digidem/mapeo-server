@@ -38,6 +38,8 @@ observation. The following fields are required:
 
 The object will be returned, with the fields `id` and `timestamp` set.
 
+The property `ref` can also be optionally set, to indicate that the observation *observes* the OSM element with ID `ref`.
+
 #### `GET /observations/:id`
 
 Fetch an observation by its `id`. An array of JSON objects will be returned.
@@ -47,8 +49,13 @@ multiple results.
 
 #### `PUT /observations/:id`
 
-Update an observation by its `id` by providing a JSON object. Any fields given
-will be replaced.
+Update an observation by its `id` by providing a JSON object representing the new observation. `id` and `version` *must* be set. Only the following fields can be modified:
+
+- `lat`
+- `lon`
+- `ref`
+- `attachments`
+- `tags`
 
 #### `PUT /observations/to-element/:id`
 

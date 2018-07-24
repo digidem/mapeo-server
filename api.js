@@ -1,3 +1,5 @@
+// TODO(noffle): return error strings as valid JSON
+
 var fs = require('fs')
 var sync = require('mapeo-sync')
 var path = require('path')
@@ -80,73 +82,95 @@ Api.prototype.observationCreate = function (req, res, m) {
       res.end('couldnt parse body json: ' + err.toString())
       return
     }
+    try {
+      validateObservation(obs)
+    } catch (err) {
+      res.statusCode = 400
+      res.end('Invalid observation: ' + err.toString())
+    }
+    const newObs = whitelistProps(obs)
+    newObs.type = 'observation'
+    newObs.timestamp = (new Date().toISOString())
 
-    obs.type = 'observation'
-    obs.created_at_timestamp = (new Date().getTime())
-
-    self.osm.create(obs, function (err, _, node) {
+    self.osm.create(newObs, function (err, _, node) {
       if (err) {
         res.statusCode = 500
         res.end('failed to create observation: ' + err.toString())
         return
       }
       res.setHeader('content-type', 'application/json')
-      obs.id = node.value.k
-      obs.version = node.key
-      res.end(JSON.stringify(obs))
+      newObs.id = node.value.k
+      newObs.version = node.key
+      res.end(JSON.stringify(newObs))
     })
   })
 }
 
 Api.prototype.observationUpdate = function (req, res, m) {
   var self = this
-  this.osm.get(m.id, function (err, obses) {
-    if (err) {
-      res.statusCode = 500
-      res.end('failed to update observation:' + err.toString())
-      return
-    }
-    if (obses.length === 0) {
-      res.statusCode = 500
-      res.end('failed to update observation: No observation found with id ' + m.id)
-      return
-    }
-    obses = flatObs(m.id, obses)
 
-    body(req, function (err, obs) {
-      if (err) {
-        res.statusCode = 400
-        res.end('couldnt parse body json: ' + err.toString())
+  body(req, function (err, newObs) {
+    if (err) {
+      res.statusCode = 400
+      res.end('couldnt parse body json: ' + err.toString())
+      return
+    }
+
+    if (typeof newObs.version !== 'string') {
+      res.statusCode = 400
+      res.end('the given observation must have a "version" set')
+      return
+    }
+
+    if (newObs.id !== m.id) {
+      res.statusCode = 400
+      res.end('the given observation\'s id doesn\'t match the id url param')
+      return
+    }
+
+    try {
+      validateObservation(newObs)
+    } catch (err) {
+      res.statusCode = 400
+      res.end('Malformed observation: ' + err.toString())
+      return
+    }
+
+    self.osm.getByVersion(newObs.version, function (err, obs) {
+      if (err && !err.notFound) {
+        res.statusCode = 500
+        res.end('internal error: ' + err.toString())
         return
       }
-      var opts = {}
-      var old = obses[0]
-      if (!old) {
+      if (err && err.notFound) {
         res.statusCode = 400
-        res.end('observation with id not found')
+        res.end('no such observation with that version')
         return
       }
-      if (obses.length > 1) {
-        obses = obses.sort(function (a, b) {
-          return b.created_at_timestamp - a.created_at_timestamp
-        })
-        opts.links = old.id
+      if (obs.id !== m.id) {
+        res.statusCode = 400
+        res.end('observation with that version doesn\'t match the given id')
+        return
       }
-      var newObs = Object.assign(old, {
-        properties: obs.properties,
-        lat: obs.lat,
-        lon: obs.lon
-      })
-      self.osm.put(m.id, newObs, opts, function (err, node) {
+
+      var opts = {
+        links: [newObs.version]
+      }
+
+      var finalObs = whitelistProps(newObs)
+      finalObs.type = 'observation'
+      finalObs.timestamp = new Date().toISOString()
+
+      self.osm.put(m.id, finalObs, opts, function (err, node) {
         if (err) {
           res.statusCode = 500
           res.end('failed to update observation:' + err.toString())
           return
         }
         res.setHeader('content-type', 'application/json')
-        newObs.id = node.value.k
-        newObs.version = node.key
-        res.end(JSON.stringify(newObs))
+        finalObs.id = node.value.k
+        finalObs.version = node.key
+        res.end(JSON.stringify(finalObs))
       })
     })
   })
@@ -481,4 +505,35 @@ function flatObs (id, obses) {
     obs.version = version
     return obs
   })
+}
+
+function validateObservation (obs) {
+  if (!obs) throw new Error('Observation is undefined')
+  if (obs.type !== 'observation') throw new Error('Observation must be of type `observation`')
+  if (obs.attachments) {
+    if (!Array.isArray(obs.attachments)) throw new Error('Observation attachments must be an array')
+    obs.attachments.forEach(function (att, i) {
+      if (!att) throw new Error('Attachment at index `' + i + '` is undefined')
+      if (typeof att.id !== 'string') throw new Error('Attachment must have a string id property (at index `' + i + '`)')
+    })
+  }
+  if (typeof obs.lat !== 'undefined' || typeof obs.lon !== 'undefined') {
+    if (typeof obs.lat === 'undefined' || typeof obs.lon === 'undefined') {
+      throw new Error('one of lat and lon are undefined')
+    }
+    if (typeof obs.lat !== 'number' || typeof obs.lon !== 'number') {
+      throw new Error('lon and lat must be a number')
+    }
+  }
+}
+
+var VALID_PROPS = ['lon', 'lat', 'attachments', 'tags', 'ref']
+
+// Filter whitelisted props
+function whitelistProps (obs) {
+  var newObs = {}
+  VALID_PROPS.forEach(function (prop) {
+    newObs[prop] = obs[prop]
+  })
+  return newObs
 }
