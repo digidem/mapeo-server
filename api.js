@@ -1,3 +1,5 @@
+// TODO(noffle): return error strings as valid JSON
+
 var fs = require('fs')
 var sync = require('mapeo-sync')
 var path = require('path')
@@ -124,18 +126,23 @@ Api.prototype.observationUpdate = function (req, res, m) {
         res.end('couldnt parse body json: ' + err.toString())
         return
       }
+      try {
+        validateObservation(newObs)
+      } catch (err) {
+        res.statusCode = 400
+        res.end('Malformed observation: ' + err.toString())
+        return
+      }
+
       // link back to the previous observation
       var opts = {
         links: [m.version]
       }
-      var finalObs = Object.assign(oldObs, {
-        lat: newObs.lat || oldObs.lat,
-        lon: newObs.lon || oldObs.lon,
-        ref: newObs.ref || oldObs.ref,
-        attachments: newObs.attachments || oldObs.attachments,
-        tags: newObs.tags || oldObs.attachments,
-        timestamp: new Date().toISOString()
-      })
+
+      var finalObs = whitelistProps(newObs)
+      finalObs.type = 'observation'
+      finalObs.timestamp = new Date().toISOString()
+
       self.osm.put(id, finalObs, opts, function (err, node) {
         if (err) {
           res.statusCode = 500
@@ -480,4 +487,35 @@ function flatObs (id, obses) {
     obs.version = version
     return obs
   })
+}
+
+function validateObservation (obs) {
+  if (!obs) throw new Error('Observation is undefined')
+  if (obs.type !== 'observation') throw new Error('Observation must be of type `observation`')
+  if (obs.attachments) {
+    if (!Array.isArray(obs.attachments)) throw new Error('Observation attachments must be an array')
+    obs.attachments.forEach(function (att, i) {
+      if (!att) throw new Error('Attachment at index `' + i + '` is undefined')
+      if (typeof att.id !== 'string') throw new Error('Attachment must have a string id property (at index `' + i + '`)')
+    })
+  }
+  if (typeof obs.lat !== 'undefined' || typeof obs.lon !== 'undefined') {
+    if (typeof obs.lat === 'undefined' || typeof obs.lon === 'undefined') {
+      throw new Error('one of lat and lon are undefined')
+    }
+    if (typeof obs.lat !== 'number' || typeof obs.lon !== 'number') {
+      throw new Error('lon and lat must be a number')
+    }
+  }
+}
+
+var VALID_PROPS = ['lon', 'lat', 'attachments', 'tags', 'ref']
+
+// Filter whitelisted props
+function whitelistProps (obs) {
+  var newObs = {}
+  VALID_PROPS.forEach(function (prop) {
+    newObs[prop] = obs[prop]
+  })
+  return newObs
 }

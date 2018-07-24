@@ -146,7 +146,8 @@ test('observations: update lat/lon', function (t) {
   }
   var update = {
     lat: 1.5,
-    lon: 2
+    lon: 2,
+    type: 'observation'
   }
   var expected = {
     lat: 1.5,
@@ -167,11 +168,10 @@ test('observations: update ref', function (t) {
     timestamp: new Date().toISOString()
   }
   var update = {
+    type: 'observation',
     ref: 12111
   }
   var expected = {
-    lat: 1,
-    lon: 2,
     type: 'observation',
     ref: 12111
   }
@@ -189,11 +189,10 @@ test('observations: update tags', function (t) {
     timestamp: new Date().toISOString()
   }
   var update = {
+    type: 'observation',
     tags: { foo: 'bar', hey: 'there' }
   }
   var expected = {
-    lat: 1,
-    lon: 2,
     type: 'observation',
     tags: { foo: 'bar', hey: 'there' }
   }
