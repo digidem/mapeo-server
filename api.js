@@ -104,21 +104,24 @@ Api.prototype.observationCreate = function (req, res, m) {
 
 Api.prototype.observationUpdate = function (req, res, m) {
   var self = this
-  this.osm.getByVersion(m.version, function (err, oldObs) {
+  this.osm.get(m.id, function (err, heads) {
     if (err) {
       res.statusCode = 500
       res.end('failed to update observation:' + err.toString())
       return
     }
-    if (!oldObs) {
+    if (heads.length === 0) {
       res.statusCode = 500
-      res.end('failed to update observation: No observation found with version ' + m.version)
+      res.end('failed to update observation: No observation found with id ' + m.id)
       return
     }
-    // clear id and version
-    var id = oldObs.id
-    delete oldObs.id
-    delete oldObs.version
+    heads = flatObs(m.id, heads)
+    var old = heads[0]
+    if (!old) {
+      res.statusCode = 400
+      res.end('observation with id not found')
+      return
+    }
 
     body(req, function (err, newObs) {
       if (err) {
@@ -126,6 +129,7 @@ Api.prototype.observationUpdate = function (req, res, m) {
         res.end('couldnt parse body json: ' + err.toString())
         return
       }
+
       try {
         validateObservation(newObs)
       } catch (err) {
@@ -134,16 +138,22 @@ Api.prototype.observationUpdate = function (req, res, m) {
         return
       }
 
-      // link back to the previous observation
-      var opts = {
-        links: [m.version]
+      var opts = {}
+
+      // Get the newest observation head by timestamp. Replace it by linking
+      // to its version.
+      if (heads.length > 1) {
+        old = heads.sort(function (a, b) {
+          return b.timestamp - a.timestamp
+        })[0]
       }
+      opts.links = [old.version]
 
       var finalObs = whitelistProps(newObs)
       finalObs.type = 'observation'
       finalObs.timestamp = new Date().toISOString()
 
-      self.osm.put(id, finalObs, opts, function (err, node) {
+      self.osm.put(m.id, finalObs, opts, function (err, node) {
         if (err) {
           res.statusCode = 500
           res.end('failed to update observation:' + err.toString())

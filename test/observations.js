@@ -337,7 +337,7 @@ function testUpdateObservation (t, orig, update, expected, cb) {
     osm.create(orig, function (err, id, node) {
       t.error(err)
 
-      var href = `${base}/observations/${node.key}`
+      var href = `${base}/observations/${id}`
       var hq = hyperquest.put(href, {
         headers: { 'content-type': 'application/json' }
       })

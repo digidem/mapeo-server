@@ -47,15 +47,17 @@ Usually there will only be one result, but in forking situations (e.g. two
 devices create offline edits of the same observation then sync) there can be
 multiple results.
 
-#### `PUT /observations/:version`
+#### `PUT /observations/:id`
 
-Update an observation by its `version` by providing a JSON object. Only the following fields can be modified:
+Update an observation by its `id` by providing a JSON object. Only the following fields can be modified:
 
 - `lat`
 - `lon`
 - `ref`
 - `attachments`
 - `tags`
+
+If there are multiple heads for the element at `id`, only the head with the newest timestamp will be modified.
 
 #### `PUT /observations/to-element/:id`
 
