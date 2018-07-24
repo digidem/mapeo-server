@@ -126,7 +126,7 @@ Api.prototype.observationUpdate = function (req, res, m) {
       }
       // link back to the previous observation
       var opts = {
-        links: m.version
+        links: [m.version]
       }
       var finalObs = Object.assign(oldObs, {
         lat: newObs.lat || oldObs.lat,
