@@ -23,7 +23,7 @@ test('observations: create', function (t) {
         var obj = JSON.parse(body)
         t.ok(obj.id, 'id field set')
         t.ok(obj.version, 'version field set')
-        t.ok(obj.created_at_timestamp, 'created_at_timestamp field set')
+        t.ok(obj.timestamp, 'timestamp field set')
       } catch (e) {
         t.error(e, 'json parsing exception!')
       }
@@ -43,7 +43,7 @@ test('observations: create + delete', function (t) {
       t.error(err)
       t.ok(obs.id, 'id field set')
       t.ok(obs.version, 'version field set')
-      t.ok(obs.created_at_timestamp, 'created_at_timestamp field set')
+      t.ok(obs.timestamp, 'timestamp field set')
 
       delJson(`${base}/observations/${obs.id}`, function (err) {
         t.error(err)
@@ -142,7 +142,7 @@ test('observations: update lat/lon', function (t) {
     lat: 1,
     lon: 2,
     type: 'observation',
-    created_at_timestamp: new Date().getTime()
+    timestamp: new Date().toISOString()
   }
   var update = {
     lat: 1.5,
@@ -151,8 +151,7 @@ test('observations: update lat/lon', function (t) {
   var expected = {
     lat: 1.5,
     lon: 2,
-    type: 'observation',
-    created_at_timestamp: original.created_at_timestamp
+    type: 'observation'
   }
   testUpdateObservation(t, original, update, expected, function () {
     t.end()
@@ -165,7 +164,7 @@ test('observations: update ref', function (t) {
     lon: 2,
     type: 'observation',
     ref: 12094,
-    created_at_timestamp: new Date().getTime()
+    timestamp: new Date().toISOString()
   }
   var update = {
     ref: 12111
@@ -174,8 +173,7 @@ test('observations: update ref', function (t) {
     lat: 1,
     lon: 2,
     type: 'observation',
-    ref: 12111,
-    created_at_timestamp: original.created_at_timestamp
+    ref: 12111
   }
   testUpdateObservation(t, original, update, expected, function () {
     t.end()
@@ -188,7 +186,7 @@ test('observations: update tags', function (t) {
     lon: 2,
     type: 'observation',
     tags: { hey: 'you' },
-    created_at_timestamp: new Date().getTime()
+    timestamp: new Date().toISOString()
   }
   var update = {
     tags: { foo: 'bar', hey: 'there' }
@@ -197,8 +195,7 @@ test('observations: update tags', function (t) {
     lat: 1,
     lon: 2,
     type: 'observation',
-    tags: { foo: 'bar', hey: 'there' },
-    created_at_timestamp: original.created_at_timestamp
+    tags: { foo: 'bar', hey: 'there' }
   }
   testUpdateObservation(t, original, update, expected, function () {
     t.end()
@@ -222,7 +219,7 @@ test('observations: create + convert', function (t) {
       lat: 1,
       lon: 2,
       type: 'observation',
-      created_at_timestamp: new Date().getTime()
+      timestamp: new Date().toISOString()
     }
     osm.create(og, function (err, id, node) {
       t.error(err)
@@ -356,6 +353,7 @@ function testUpdateObservation (t, orig, update, expected, cb) {
           var obsCopy = Object.assign({}, obs)
           delete obsCopy.id
           delete obsCopy.version
+          delete obsCopy.timestamp
           t.deepEquals(obsCopy, expected)
 
           var href = `${base}/observations/${obs.id}`

@@ -84,7 +84,7 @@ Api.prototype.observationCreate = function (req, res, m) {
     // TODO(noffle): add whitelist for specifically allowed properties
 
     obs.type = 'observation'
-    obs.created_at_timestamp = (new Date().getTime())
+    obs.timestamp = (new Date().toISOString())
 
     self.osm.create(obs, function (err, _, node) {
       if (err) {
@@ -133,7 +133,8 @@ Api.prototype.observationUpdate = function (req, res, m) {
         lon: newObs.lon || oldObs.lon,
         ref: newObs.ref || oldObs.ref,
         attachments: newObs.attachments || oldObs.attachments,
-        tags: newObs.tags || oldObs.attachments
+        tags: newObs.tags || oldObs.attachments,
+        timestamp: new Date().toISOString()
       })
       self.osm.put(id, finalObs, opts, function (err, node) {
         if (err) {
