@@ -180,6 +180,42 @@ test('observations: update ref', function (t) {
   })
 })
 
+test('observations: update attachments', function (t) {
+  var original = {
+    lat: 1,
+    lon: 2,
+    type: 'observation',
+    attachments: [{
+      id: '12345.jpg',
+      type: 'image/jpeg'
+    }],
+    timestamp: new Date().toISOString()
+  }
+  var update = {
+    type: 'observation',
+    attachments: [{
+      id: '12345.jpg',
+      type: 'image/jpeg'
+    }, {
+      id: '56789.jpg',
+      type: 'image/jpeg'
+    }]
+  }
+  var expected = {
+    type: 'observation',
+    attachments: [{
+      id: '12345.jpg',
+      type: 'image/jpeg'
+    }, {
+      id: '56789.jpg',
+      type: 'image/jpeg'
+    }]
+  }
+  testUpdateObservation(t, original, update, expected, function () {
+    t.end()
+  })
+})
+
 test('observations: update tags', function (t) {
   var original = {
     lat: 1,
