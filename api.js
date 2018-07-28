@@ -197,7 +197,6 @@ Api.prototype.observationConvert = function (req, res, m) {
     // 2. see if ref already present (short circuit)
     var obs = obses[Object.keys(obses)[0]]
     if (obs.ref) {
-      console.log('obs.ref', obs.ref)
       res.end(JSON.stringify({ id: obs.ref }))
       return
     }
