@@ -194,10 +194,11 @@ Api.prototype.observationConvert = function (req, res, m) {
       return
     }
 
-    // 2. see if tags.element_id already present (short circuit)
+    // 2. see if ref already present (short circuit)
     var obs = obses[Object.keys(obses)[0]]
-    if (obs.tags && obs.tags.element_id) {
-      res.end(JSON.stringify({ id: obs.tags.element_id }))
+    if (obs.ref) {
+      console.log('obs.ref', obs.ref)
+      res.end(JSON.stringify({ id: obs.ref }))
       return
     }
 
@@ -214,7 +215,7 @@ Api.prototype.observationConvert = function (req, res, m) {
 
     // 4. modify observation tags
     obs.tags = obs.tags || {}
-    obs.tags.element_id = batch[0].key
+    obs.ref = batch[0].key
     batch.push({
       type: 'put',
       key: m.id,
@@ -228,7 +229,7 @@ Api.prototype.observationConvert = function (req, res, m) {
         res.end(JSON.stringify('failed to write new element & observation'))
         return
       }
-      res.end(JSON.stringify({ id: obs.tags.element_id }))
+      res.end(JSON.stringify({ id: obs.ref }))
     })
   })
 }

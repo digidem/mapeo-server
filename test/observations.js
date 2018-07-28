@@ -329,10 +329,10 @@ test('observations: create + convert', function (t) {
         t.error(err)
         t.ok(elm.id)
 
-        // look up observation again + check for element_id tag
+        // look up observation again + check for ref
         getJson(`${base}/observations/${id}`, function (err, obses) {
           t.error(err)
-          t.equals(obses[0].tags.element_id, elm.id)
+          t.equals(obses[0].ref, elm.id)
 
           // look up element + check id
           getJson(`${base}/observations/${elm.id}`, function (err, theElms) {
