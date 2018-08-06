@@ -59,10 +59,9 @@ Update an observation by its `id` by providing a JSON object representing the ne
 
 #### `PUT /observations/to-element/:id`
 
-Converts an observation, by its ID, to an OSM element (defaults to `node`
-currently). Returns an object of the form `{ id: elementId }`. If the
-observation has already been converted to a node, it will return the existing
-ID.
+Reads the request body (a JSON encoded observation, including the `version`
+property). Converts the observation to an OSM element (defaults to `node`
+currently). Returns the new node as JSON.
 
 ### Presets
 

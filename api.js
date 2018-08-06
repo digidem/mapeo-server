@@ -179,56 +179,92 @@ Api.prototype.observationUpdate = function (req, res, m) {
 Api.prototype.observationConvert = function (req, res, m) {
   var self = this
 
-  res.setHeader('content-type', 'application/json')
-
-  // 1. get the observation
-  this.osm.get(m.id, function (err, obses) {
+  body(req, function (err, obs) {
     if (err) {
-      res.statusCode = 500
-      res.end(JSON.stringify('failed to lookup observation: ' + err.toString()))
-      return
-    }
-    if (!Object.keys(obses).length) {
-      res.statusCode = 404
-      res.end(JSON.stringify('failed to lookup observation: not found'))
+      res.statusCode = 400
+      res.end('couldnt parse body json: ' + err.toString())
       return
     }
 
-    // 2. see if ref already present (short circuit)
-    var obs = obses[Object.keys(obses)[0]]
-    if (obs.ref) {
-      res.end(JSON.stringify({ id: obs.ref }))
+    if (typeof obs.version !== 'string') {
+      res.statusCode = 400
+      res.end('the given observation must have a "version" set')
       return
     }
 
-    var batch = []
+    if (obs.id !== m.id) {
+      res.statusCode = 400
+      res.end('the given observation\'s id doesn\'t match the id url param')
+      return
+    }
 
-    // 3. create node
-    batch.push({
-      type: 'put',
-      key: randombytes(8).toString('hex'),
-      value: xtend(obs, {
-        type: 'node'
-      })
-    })
-
-    // 4. modify observation tags
-    obs.tags = obs.tags || {}
-    obs.ref = batch[0].key
-    batch.push({
-      type: 'put',
-      key: m.id,
-      value: obs
-    })
-
-    // 5. batch modification
-    self.osm.batch(batch, function (err) {
-      if (err) {
+    self.osm.getByVersion(obs.version, function (err, obs) {
+      if (err && !err.notFound) {
         res.statusCode = 500
-        res.end(JSON.stringify('failed to write new element & observation'))
+        res.end('internal error: ' + err.toString())
         return
       }
-      res.end(JSON.stringify({ id: obs.ref }))
+      if (err && err.notFound) {
+        res.statusCode = 400
+        res.end('no such observation with that version')
+        return
+      }
+      if (obs.id !== m.id) {
+        res.statusCode = 400
+        res.end('observation with that version doesn\'t match the given id')
+        return
+      }
+
+      // if 'ref' is already set, return
+      if (obs.ref) {
+        self.osm.get(obs.ref, function (err, obses) {
+          if (err) {
+            res.statusCode = 500
+            res.end('internal error: ' + err.toString())
+            return
+          }
+          res.setHeader('content-type', 'application/json')
+          res.statusCode = 200
+          res.end(JSON.stringify(flatObs(obs.ref, obses)[0]))
+        })
+        return
+      }
+
+      // create new node
+      const newNode = whitelistProps(obs)
+      newNode.type = 'node'
+      newNode.timestamp = (new Date().toISOString())
+      self.osm.create(newNode, function (err, _, node) {
+        if (err) {
+          res.statusCode = 500
+          res.end('failed to create observation: ' + err.toString())
+          return
+        }
+
+        newNode.id = node.value.k
+        newNode.version = node.key
+
+        // update observation with 'ref'
+        var opts = {
+          links: [obs.version]
+        }
+        var finalObs = whitelistProps(obs)
+        finalObs.type = 'observation'
+        finalObs.timestamp = new Date().toISOString()
+        finalObs.ref = node.value.k
+
+        self.osm.put(m.id, finalObs, opts, function (err, node) {
+          if (err) {
+            res.statusCode = 500
+            res.end('failed to update observation:' + err.toString())
+            return
+          }
+          res.setHeader('content-type', 'application/json')
+          finalObs.id = node.value.k
+          finalObs.version = node.key
+          res.end(JSON.stringify(newNode))
+        })
+      })
     })
   })
 }

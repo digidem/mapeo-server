@@ -324,8 +324,11 @@ test('observations: create + convert', function (t) {
     osm.create(og, function (err, id, node) {
       t.error(err)
 
+      og.id = node.value.k
+      og.version = node.key
+
       // convert to node
-      putJson(`${base}/observations/to-element/${id}`, function (err, elm) {
+      putJson(`${base}/observations/to-element/${id}`, JSON.stringify(og), function (err, elm) {
         t.error(err)
         t.ok(elm.id)
 
@@ -341,7 +344,7 @@ test('observations: create + convert', function (t) {
 
             // try to convert observation *again* and ensure the same id comes
             // back
-            putJson(`${base}/observations/to-element/${id}`, function (err, oldElm) {
+            putJson(`${base}/observations/to-element/${id}`, JSON.stringify(obses[0]), function (err, oldElm) {
               t.error(err)
               t.equals(oldElm.id, elm.id)
 
@@ -392,7 +395,12 @@ function postJson (href, data, cb) {
   hq.end(data)
 }
 
-function putJson (href, cb) {
+function putJson (href, body, cb) {
+  if (!cb && typeof body === 'function') {
+    cb = body
+    body = null
+  }
+
   var hq = hyperquest.put(href, { headers: { 'content-type': 'application/json' } })
   hq.on('response', function (res) {
     if (res.statusCode === 200) {
@@ -400,10 +408,13 @@ function putJson (href, cb) {
         cb(null, JSON.parse(body))
       }))
     } else {
-      cb(res.statusCode)
+      hq.pipe(concat({ encoding: 'string' }, function (body) {
+        cb({ code: res.statusCode, message: body })
+      }))
     }
   })
-  hq.end()
+  if (!body) hq.end()
+  else hq.end(body)
 }
 
 function getJson (href, cb) {
