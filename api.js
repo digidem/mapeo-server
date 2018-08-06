@@ -271,8 +271,8 @@ Api.prototype.mediaPut = function (req, res, m, q) {
   var id = randombytes(16).toString('hex') + ext
   res.setHeader('content-type', 'application/json')
 
-  var mediaPath = 'original/' + id
-  var thumbnailPath = 'thumbnail/' + id
+  var mediaPath = 'original_' + id
+  var thumbnailPath = 'thumbnail_' + id
 
   function copyFileTo (file, to, cb) {
     fs.createReadStream(file).pipe(self.media.createWriteStream(to))

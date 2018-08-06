@@ -156,8 +156,7 @@ test('media: upload + get with media mode: push', function (t) {
   })
 })
 
-
-test('media: upload + get with media mode: push<->pull', function (t) {
+test.only('media: upload + get with media mode: push<->pull', function (t) {
   var name1 = 'test1'
   var name2 = 'test2'
   createServer({
@@ -196,6 +195,9 @@ test('media: upload + get with media mode: push<->pull', function (t) {
         })
       }))
 
+      // request
+      hq.end()
+
       function sync (target) {
         var href = base + `/sync/start?host=${target.host}&port=${target.port}`
         var hq = hyperquest.get(href, {})
@@ -217,15 +219,14 @@ test('media: upload + get with media mode: push<->pull', function (t) {
           t.equals(buf1.toString('hex'), buf2.toString('hex'))
           media.createReadStream('thumbnail/' + obj.id).pipe(concat(function (buf3) {
             t.equals(buf1.toString('hex'), buf3.toString('hex'))
+            media2._list(console.log)
             media2.createReadStream('original/' + obj.id).pipe(concat(function (buf4) {
               t.equals(buf1.toString('hex'), buf4.toString('hex'))
+              done()
             }))
           }))
         }))
       }
-
-      // request
-      hq.end()
     })
   })
 })
