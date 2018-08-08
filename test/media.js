@@ -119,7 +119,7 @@ test('media: upload + get with media mode: push', function (t) {
         var hq = hyperquest.get(href, {})
         hq.once('response', function (res) {
           t.equal(res.statusCode, 200, 'sync 200 ok')
-          check()
+          res.on('end', check)
         })
       }
 
@@ -135,15 +135,9 @@ test('media: upload + get with media mode: push', function (t) {
           t.equals(buf1.toString('hex'), buf2.toString('hex'))
           media.createReadStream('thumbnail/' + obj.id).pipe(concat(function (buf3) {
             t.equals(buf1.toString('hex'), buf3.toString('hex'))
-            var stream = media2.createReadStream('original/' + obj.id)
-            var errored = false
-            stream.on('end', function () {
-              t.ok(errored)
-              if (!errored) done()
-            })
-            stream.on('error', function (err) {
-              t.ok(err.message.indexOf('Blob not found') === 0, 'error')
-              errored = true
+            media2.exists('original/' + obj.id, function (err, exists) {
+              t.error(err, 'no error')
+              t.notOk(exists, 'media does not exist')
               done()
             })
           }))
@@ -156,7 +150,7 @@ test('media: upload + get with media mode: push', function (t) {
   })
 })
 
-test.only('media: upload + get with media mode: push<->pull', function (t) {
+test('media: upload + get with media mode: push<->pull', function (t) {
   var name1 = 'test1'
   var name2 = 'test2'
   createServer({
@@ -203,7 +197,7 @@ test.only('media: upload + get with media mode: push<->pull', function (t) {
         var hq = hyperquest.get(href, {})
         hq.once('response', function (res) {
           t.equal(res.statusCode, 200, 'sync 200 ok')
-          check()
+          res.on('end', check)
         })
       }
 
@@ -216,12 +210,11 @@ test.only('media: upload + get with media mode: push<->pull', function (t) {
       function check () {
         var buf1 = fs.readFileSync('test/data/image.jpg')
         media.createReadStream('original/' + obj.id).pipe(concat(function (buf2) {
-          t.equals(buf1.toString('hex'), buf2.toString('hex'))
+          t.equals(buf1.toString('hex'), buf2.toString('hex'), 'original is correct on server1')
           media.createReadStream('thumbnail/' + obj.id).pipe(concat(function (buf3) {
-            t.equals(buf1.toString('hex'), buf3.toString('hex'))
-            media2._list(console.log)
+            t.equals(buf1.toString('hex'), buf3.toString('hex'), 'thumbnail is correct on server1')
             media2.createReadStream('original/' + obj.id).pipe(concat(function (buf4) {
-              t.equals(buf1.toString('hex'), buf4.toString('hex'))
+              t.equals(buf1.toString('hex'), buf4.toString('hex'), 'original is correct on server2')
               done()
             }))
           }))

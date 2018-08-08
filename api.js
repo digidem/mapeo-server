@@ -21,7 +21,7 @@ function Api (osm, media, opts) {
   var host = opts.host
   this.staticRoot = opts.staticRoot || '.'
   this.sync = sync(osm, media, {id, host})
-  this.browser = opts.listen && this.sync.listen(opts)
+  this.browser = opts.listen && this.sync.listen(undefined, opts)
 }
 
 // Observations
@@ -296,8 +296,8 @@ Api.prototype.mediaPut = function (req, res, m, q) {
   var id = randombytes(16).toString('hex') + ext
   res.setHeader('content-type', 'application/json')
 
-  var mediaPath = 'original_' + id
-  var thumbnailPath = 'thumbnail_' + id
+  var mediaPath = 'original/' + id
+  var thumbnailPath = 'thumbnail/' + id
 
   function copyFileTo (file, to, cb) {
     var ws = self.media.createWriteStream(to, cb)
