@@ -21,7 +21,7 @@ function Api (osm, media, opts) {
   var host = opts.host
   this.staticRoot = opts.staticRoot || '.'
   this.sync = sync(osm, media, {id, host})
-  this.browser = opts.listen && this.sync.listen(opts)
+  this.browser = opts.listen && this.sync.listen(undefined, opts)
 }
 
 // Observations

@@ -1,5 +1,5 @@
 var Osm = require('osm-p2p-mem')
-var blob = require('abstract-blob-store')
+var blob = require('safe-fs-blob-store')
 var http = require('http')
 var Router = require('..')
 
@@ -9,10 +9,8 @@ module.exports = function (opts, cb) {
     opts = { port: 5000 }
   }
   var osm = Osm()
-  var media = blob()
-  media._list = function (cb) {
-    process.nextTick(cb, null, Object.keys(this.data))
-  }
+  var dir = '/tmp/test-mapeo-'+Math.random().toString().substring(3)
+  var media = blob(dir)
 
   var router = Router(osm, media, opts)
 
