@@ -160,6 +160,7 @@ Api.prototype.observationUpdate = function (req, res, m) {
       var finalObs = whitelistProps(newObs)
       finalObs.type = 'observation'
       finalObs.timestamp = new Date().toISOString()
+      finalObs = Object.assign(obs, finalObs)
 
       self.osm.put(m.id, finalObs, opts, function (err, node) {
         if (err) {
