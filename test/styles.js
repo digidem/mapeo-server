@@ -1,6 +1,6 @@
 var test = require('tape')
 var hyperquest = require('hyperquest')
-var createServer = require('./server')
+var {createServer} = require('./server')
 var concat = require('concat-stream')
 
 test('styles: list', function (t) {
