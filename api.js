@@ -417,13 +417,15 @@ Api.prototype.stylesGet = function (req, res, m) {
 }
 
 Api.prototype.syncClose = function (req, res, m) {
-  this.sync.close()
-  res.end()
+  this.sync.unannounce(function () {
+    res.end()
+  })
 }
 
 Api.prototype.syncAnnounce = function (req, res, m) {
-  this.sync.announce()
-  res.end()
+  this.sync.announce(function () {
+    res.end()
+  })
 }
 
 Api.prototype.getSyncTargets = function (req, res, m) {
