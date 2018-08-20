@@ -83,8 +83,6 @@ test('media: upload + get with media mode: push', function (t) {
     var fpath = encodeURIComponent('test/data/image.jpg')
     var href = a.base + '/media?file=' + fpath + '&thumbnail=' + fpath
 
-    announce(a, b, function (err) { t.error(err) })
-
     var hq = hyperquest.put(href, {})
     var obj
 
@@ -93,15 +91,16 @@ test('media: upload + get with media mode: push', function (t) {
       t.equal(res.statusCode, 200, 'create 200 ok')
       t.equal(res.headers['content-type'], 'application/json', 'type correct')
     })
+    a.router.api.sync.on('connection', function () {
+      var targets = a.router.api.sync.targets()
+      sync(targets[0])
+    })
 
     // response content
     hq.pipe(concat({ encoding: 'string' }, function (body) {
       obj = JSON.parse(body)
       t.ok(/^[0-9A-Fa-f]+.jpg$/.test(obj.id), 'expected media id response')
-      a.router.api.sync.on('connection', function () {
-        var targets = a.router.api.sync.targets()
-        sync(targets[0])
-      })
+      announce(a, b, function (err) { t.error(err) })
     }))
 
     function sync (target) {
