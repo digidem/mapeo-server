@@ -16,12 +16,13 @@ function Api (osm, media, opts) {
   if (!opts) opts = {}
   this.osm = osm
   this.media = media
-  this.opts = opts
-  var id = opts.id || 'MapeoDesktop_' + randombytes(8).toString('hex')
-  var host = opts.host
-  this.staticRoot = opts.staticRoot || '.'
-  this.sync = sync(osm, media, {id, host})
-  this.browser = opts.listen && this.sync.listen(undefined, opts)
+  var defaultOpts = {
+    id: 'MapeoDesktop_' + randombytes(8).toString('hex'),
+    staticRoot: '.'
+  }
+  this.opts = Object.assign(defaultOpts, opts)
+  this.staticRoot = this.opts.staticRoot
+  this.sync = sync(osm, media, this.opts)
 }
 
 // Observations
@@ -415,10 +416,16 @@ Api.prototype.stylesGet = function (req, res, m) {
   }
 }
 
+Api.prototype.syncClose = function (req, res, m) {
+  this.sync.unannounce(function () {
+    res.end()
+  })
+}
+
 Api.prototype.syncAnnounce = function (req, res, m) {
-  if (!this.browser) this.browser = this.sync.listen(this.opts)
-  this.browser.update()
-  res.end()
+  this.sync.announce(function () {
+    res.end()
+  })
 }
 
 Api.prototype.getSyncTargets = function (req, res, m) {

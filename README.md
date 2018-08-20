@@ -144,6 +144,14 @@ Fetch a single vector tile from the tileset `id` by an `x`,`y`,`z` coordinate.
 
 Announce (or reannounce) the current server as a valid sync target.
 
+Returns 200 OK once broadcasting has begun.
+
+#### `GET /sync/unannounce`
+
+Stop announcing (advertising) the current server as a sync target.
+
+Returns 200 OK once broadcasting has terminated.
+
 #### `GET /sync/targets`
 
 Returns list of available sync targets. Right now, only lists other services broadcasting on the local network through mdns using the 'mapeo-sync' key.
