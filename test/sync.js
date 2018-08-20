@@ -18,10 +18,12 @@ test('sync - announce and close', function (t) {
 test('sync - two-server announce and find eachother', function (t) {
   twoServers(function (a, b) {
     a.router.api.sync.on('connection', function () {
-      console.log('on conection')
       needle.get(a.base + '/sync/targets', function (err, resp, body) {
         t.error(err)
-        t.same(body.length, 1)
+        t.equal(body.length, 1)
+        var entry = body[0]
+        t.equal(entry.name, 'test2')
+        t.equal(entry.type, 'wifi')
         unannounce(a, b, function (err) {
           t.error(err)
           a.server.close()
@@ -35,4 +37,3 @@ test('sync - two-server announce and find eachother', function (t) {
     })
   })
 })
-
