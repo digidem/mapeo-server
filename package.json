@@ -24,9 +24,11 @@
     "asar": "^0.14.3",
     "body": "^5.1.0",
     "ecstatic": "^3.2.1",
+    "inherits": "^2.0.3",
     "mapeo-sync": "^3.0.0",
     "randombytes": "^2.0.6",
     "routes": "^2.1.0",
+    "statuses": "^1.5.0",
     "xtend": "^4.0.1"
   },
   "devDependencies": {
