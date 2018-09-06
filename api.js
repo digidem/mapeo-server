@@ -1,5 +1,4 @@
-// TODO(noffle): return error strings as valid JSON
-
+var error = require('debug')('mapeo-server:error')
 var fs = require('fs')
 var sync = require('mapeo-sync')
 var path = require('path')
@@ -8,6 +7,8 @@ var randombytes = require('randombytes')
 var asar = require('asar')
 var ecstatic = require('ecstatic')
 var xtend = require('xtend')
+
+var errors = require('./errors')
 
 module.exports = Api
 
@@ -25,16 +26,20 @@ function Api (osm, media, opts) {
   this.sync = sync(osm, media, this.opts)
 }
 
+function handleError (res, err) {
+  if (typeof err === 'string') err = new Error(err)
+  if (!err.status) err = errors(err)
+  errors.send(res, err)
+  error(err)
+}
+
 // Observations
 Api.prototype.observationDelete = function (req, res, m) {
+  var self = this
   res.setHeader('content-type', 'application/json')
-  this.osm.del(m.id, function (err) {
-    if (err) {
-      res.statusCode = 500
-      res.end(JSON.stringify('failed to delete observation: ' + err.toString()))
-      return
-    }
-    res.end('true')
+  self.osm.del(m.id, function (err) {
+    if (err) return handleError(res, err)
+    res.end(JSON.stringify({deleted: true}))
   })
 }
 
@@ -57,18 +62,13 @@ Api.prototype.observationList = function (req, res, m) {
       res.end(JSON.stringify(results))
     })
     .once('error', function (err) {
-      res.statusCode = 500
-      res.end('server error while getting observations: ' + err.toString())
+      return handleError(res, errors(err))
     })
 }
 
 Api.prototype.observationGet = function (req, res, m) {
   this.osm.get(m.id, function (err, obses) {
-    if (err) {
-      res.statusCode = 500
-      res.end('failed to create observation: ' + err.toString())
-      return
-    }
+    if (err) return handleError(res, err)
     res.setHeader('content-type', 'application/json')
     res.end(JSON.stringify(flatObs(m.id, obses)))
   })
@@ -78,27 +78,18 @@ Api.prototype.observationCreate = function (req, res, m) {
   var self = this
 
   body(req, function (err, obs) {
-    if (err) {
-      res.statusCode = 400
-      res.end('couldnt parse body json: ' + err.toString())
-      return
-    }
+    if (err) return handleError(res, errors.JSONParseError())
     try {
       validateObservation(obs)
     } catch (err) {
-      res.statusCode = 400
-      res.end('Invalid observation: ' + err.toString())
+      return handleError(res, errors.InvalidFields(err.message))
     }
     const newObs = whitelistProps(obs)
     newObs.type = 'observation'
     newObs.timestamp = (new Date().toISOString())
 
     self.osm.create(newObs, function (err, _, node) {
-      if (err) {
-        res.statusCode = 500
-        res.end('failed to create observation: ' + err.toString())
-        return
-      }
+      if (err) return handleError(res, err)
       res.setHeader('content-type', 'application/json')
       newObs.id = node.value.k
       newObs.version = node.key
@@ -111,48 +102,25 @@ Api.prototype.observationUpdate = function (req, res, m) {
   var self = this
 
   body(req, function (err, newObs) {
-    if (err) {
-      res.statusCode = 400
-      res.end('couldnt parse body json: ' + err.toString())
-      return
-    }
+    if (err) return handleError(res, errors.JSONParseError())
 
     if (typeof newObs.version !== 'string') {
-      res.statusCode = 400
-      res.end('the given observation must have a "version" set')
-      return
+      var error = new Error('the given observation must have a "version" set')
+      return handleError(res, error)
     }
 
-    if (newObs.id !== m.id) {
-      res.statusCode = 400
-      res.end('the given observation\'s id doesn\'t match the id url param')
-      return
-    }
+    if (newObs.id !== m.id) return handleError(res, errors.TypeMismatch(newObs.id, m.id))
 
     try {
       validateObservation(newObs)
     } catch (err) {
-      res.statusCode = 400
-      res.end('Malformed observation: ' + err.toString())
-      return
+      return handleError(res, errors.InvalidFields(err.message))
     }
 
     self.osm.getByVersion(newObs.version, function (err, obs) {
-      if (err && !err.notFound) {
-        res.statusCode = 500
-        res.end('internal error: ' + err.toString())
-        return
-      }
-      if (err && err.notFound) {
-        res.statusCode = 400
-        res.end('no such observation with that version')
-        return
-      }
-      if (obs.id !== m.id) {
-        res.statusCode = 400
-        res.end('observation with that version doesn\'t match the given id')
-        return
-      }
+      if (err && !err.notFound) return handleError(res, err)
+      if (err && err.notFound) return handleError(res, errors.NoVersion())
+      if (obs.id !== m.id) return handleError(res, errors.TypeMismatch(obs.id, m.id))
 
       var opts = {
         links: [newObs.version]
@@ -164,11 +132,7 @@ Api.prototype.observationUpdate = function (req, res, m) {
       finalObs = Object.assign(obs, finalObs)
 
       self.osm.put(m.id, finalObs, opts, function (err, node) {
-        if (err) {
-          res.statusCode = 500
-          res.end('failed to update observation:' + err.toString())
-          return
-        }
+        if (err) return handleError(res, err)
         res.setHeader('content-type', 'application/json')
         finalObs.id = node.value.k
         finalObs.version = node.key
@@ -185,15 +149,9 @@ Api.prototype.observationConvert = function (req, res, m) {
 
   // 1. get the observation
   this.osm.get(m.id, function (err, obses) {
-    if (err) {
-      res.statusCode = 500
-      res.end(JSON.stringify('failed to lookup observation: ' + err.toString()))
-      return
-    }
+    if (err) return handleError(res, err)
     if (!Object.keys(obses).length) {
-      res.statusCode = 404
-      res.end(JSON.stringify('failed to lookup observation: not found'))
-      return
+      return handleError(res, 'failed to lookup observation: not found')
     }
 
     // 2. see if tags.element_id already present (short circuit)
@@ -225,11 +183,7 @@ Api.prototype.observationConvert = function (req, res, m) {
 
     // 5. batch modification
     self.osm.batch(batch, function (err) {
-      if (err) {
-        res.statusCode = 500
-        res.end(JSON.stringify('failed to write new element & observation'))
-        return
-      }
+      if (err) return handleError(res, err)
       res.end(JSON.stringify({ id: obs.tags.element_id }))
     })
   })
@@ -240,11 +194,7 @@ Api.prototype.presetsList = function (req, res, m) {
   var self = this
   res.setHeader('content-type', 'application/json')
   fs.readdir(path.join(self.staticRoot, 'presets'), function (err, files) {
-    if (err) {
-      res.statusCode = 500
-      res.end(err.toString())
-      return
-    }
+    if (err) return handleError(res, err)
     files = files
       .filter(function (filename) {
         return fs.statSync(path.join(self.staticRoot, 'presets', filename)).isDirectory()
@@ -266,17 +216,11 @@ Api.prototype.mediaGet = function (req, res, m) {
   var id = m.type + '/' + m.id
 
   this.media.exists(id, function (err, exists) {
-    if (err) {
-      res.statusCode = 500
-      res.end('ERROR: ' + err.toString())
-    } else if (!exists) {
-      res.statusCode = 404
-      res.end()
-    } else {
-      if (m.id.endsWith('.jpg')) res.setHeader('content-type', 'image/jpeg')
-      else if (m.id.endsWith('.png')) res.setHeader('content-type', 'image/png')
-      self.media.createReadStream(id).pipe(res)
-    }
+    if (err) return handleError(res, err)
+    if (!exists) return handleError(res, errors.NotFound())
+    if (m.id.endsWith('.jpg')) res.setHeader('content-type', 'image/jpeg')
+    else if (m.id.endsWith('.png')) res.setHeader('content-type', 'image/png')
+    self.media.createReadStream(id).pipe(res)
   })
 }
 
@@ -311,22 +255,14 @@ Api.prototype.mediaPut = function (req, res, m, q) {
 
   // Copy original media
   copyFileTo(q.file, mediaPath, function (err) {
-    if (err) {
-      res.statusCode = 500
-      res.end(err.toString())
-      return
-    }
+    if (err) return handleError(res, err)
     if (!--pending) done()
   })
 
   // Copy thumbnail
   if (q.thumbnail) {
     copyFileTo(q.thumbnail, thumbnailPath, function (err) {
-      if (err) {
-        res.statusCode = 500
-        res.end(err.toString())
-        return
-      }
+      if (err) return handleError(res, err)
       if (!--pending) done()
     })
   }
@@ -342,11 +278,7 @@ Api.prototype.stylesList = function (req, res, m) {
   var self = this
   res.setHeader('content-type', 'application/json')
   fs.readdir(path.join(self.staticRoot, 'styles'), function (err, files) {
-    if (err) {
-      res.statusCode = 500
-      res.end(err.toString())
-      return
-    }
+    if (err) return handleError(res, err)
     files = files
       .filter(function (file) {
         var stat = fs.statSync(path.join(self.staticRoot, 'styles', file))
@@ -411,8 +343,7 @@ Api.prototype.stylesGet = function (req, res, m) {
 
     res.end(buf)
   } else {
-    res.statusCode = 404
-    res.end()
+    return handleError(res, errors.NotFound())
   }
 }
 

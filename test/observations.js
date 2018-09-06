@@ -39,17 +39,17 @@ test('observations: create + delete', function (t) {
   createServer(function (server, base) {
     var data = JSON.stringify({lat: 5, lon: -0.123, type: 'observation'})
 
-    postJson(base + '/observations', data, function (err, obs) {
-      t.error(err)
+    postJson(base + '/observations', data, function (obs) {
+      t.error(obs.error)
       t.ok(obs.id, 'id field set')
       t.ok(obs.version, 'version field set')
       t.ok(obs.timestamp, 'timestamp field set')
 
-      delJson(`${base}/observations/${obs.id}`, function (err) {
-        t.error(err)
+      delJson(`${base}/observations/${obs.id}`, function (resp) {
+        t.error(resp.error)
 
-        getJson(`${base}/observations/${obs.id}`, function (err, obses) {
-          t.error(err)
+        getJson(`${base}/observations/${obs.id}`, function (obses) {
+          t.error(obses.err)
           t.equals(obses.length, 1)
           t.ok(obses[0].deleted)
 
@@ -242,8 +242,8 @@ test('observations: update tags', function (t) {
 
 test('observations: update with invalid id fails gracefully', function (t) {
   createServer(function (server, base, osm, media) {
-    putJson(`${base}/observations/null`, function (err, elm) {
-      t.ok(err)
+    putJson(`${base}/observations/null`, function (elm) {
+      t.ok(elm.error)
       server.close()
       t.end()
     })
@@ -277,6 +277,11 @@ test('observations: try to update with bad version', function (t) {
         t.equal(res.statusCode, 400, 'bad request 400')
         server.close(function () { t.end() })
       })
+
+      hq.pipe(concat({ encoding: 'string' }, function (body) {
+        var objs = JSON.parse(body)
+        t.same(objs.status, 400)
+      }))
 
       hq.end(JSON.stringify(update))
     })
@@ -328,24 +333,24 @@ test('observations: create + convert', function (t) {
       t.error(err)
 
       // convert to node
-      putJson(`${base}/observations/to-element/${id}`, function (err, elm) {
-        t.error(err)
+      putJson(`${base}/observations/to-element/${id}`, function (elm) {
+        t.error(elm.error)
         t.ok(elm.id)
 
         // look up observation again + check for element_id tag
-        getJson(`${base}/observations/${id}`, function (err, obses) {
-          t.error(err)
+        getJson(`${base}/observations/${id}`, function (obses) {
+          t.error(obses.error)
           t.equals(obses[0].tags.element_id, elm.id)
 
           // look up element + check id
-          getJson(`${base}/observations/${elm.id}`, function (err, theElms) {
-            t.error(err)
+          getJson(`${base}/observations/${elm.id}`, function (theElms) {
+            t.error(theElms.error)
             t.equals(theElms[0].id, elm.id)
 
             // try to convert observation *again* and ensure the same id comes
             // back
-            putJson(`${base}/observations/to-element/${id}`, function (err, oldElm) {
-              t.error(err)
+            putJson(`${base}/observations/to-element/${id}`, function (oldElm) {
+              t.error(oldElm.error)
               t.equals(oldElm.id, elm.id)
 
               server.close()
@@ -384,13 +389,9 @@ function check (t, href, expected, done) {
 function postJson (href, data, cb) {
   var hq = hyperquest.post(href, { headers: { 'content-type': 'application/json' } })
   hq.on('response', function (res) {
-    if (res.statusCode === 200) {
-      hq.pipe(concat({ encoding: 'string' }, function (body) {
-        cb(null, JSON.parse(body))
-      }))
-    } else {
-      cb(res.statusCode)
-    }
+    hq.pipe(concat({ encoding: 'string' }, function (body) {
+      cb(JSON.parse(body))
+    }))
   })
   hq.end(data)
 }
@@ -398,13 +399,9 @@ function postJson (href, data, cb) {
 function putJson (href, cb) {
   var hq = hyperquest.put(href, { headers: { 'content-type': 'application/json' } })
   hq.on('response', function (res) {
-    if (res.statusCode === 200) {
-      hq.pipe(concat({ encoding: 'string' }, function (body) {
-        cb(null, JSON.parse(body))
-      }))
-    } else {
-      cb(res.statusCode)
-    }
+    hq.pipe(concat({ encoding: 'string' }, function (body) {
+      cb(JSON.parse(body))
+    }))
   })
   hq.end()
 }
@@ -412,26 +409,18 @@ function putJson (href, cb) {
 function getJson (href, cb) {
   var hq = hyperquest.get(href, { headers: { 'content-type': 'application/json' } })
   hq.on('response', function (res) {
-    if (res.statusCode === 200) {
-      hq.pipe(concat({ encoding: 'string' }, function (body) {
-        cb(null, JSON.parse(body))
-      }))
-    } else {
-      cb(res.statusCode)
-    }
+    hq.pipe(concat({ encoding: 'string' }, function (body) {
+      cb(JSON.parse(body))
+    }))
   })
 }
 
 function delJson (href, cb) {
   var hq = hyperquest.delete(href, { headers: { 'content-type': 'application/json' } })
   hq.on('response', function (res) {
-    if (res.statusCode === 200) {
-      hq.pipe(concat({ encoding: 'string' }, function (body) {
-        cb(null, JSON.parse(body))
-      }))
-    } else {
-      cb(res.statusCode)
-    }
+    hq.pipe(concat({ encoding: 'string' }, function (body) {
+      cb(JSON.parse(body))
+    }))
   })
   hq.end()
 }
