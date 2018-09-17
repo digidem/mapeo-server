@@ -1,7 +1,8 @@
 var Router = require('routes')
-var Api = require('./api')
 var url = require('url')
 var querystring = require('querystring')
+
+var Api = require('./api')
 
 module.exports = function (osm, media, opts) {
   var router = Router()
