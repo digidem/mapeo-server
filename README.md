@@ -9,6 +9,45 @@ media management routes and static file routes for an offline tile server.
 $ npm install mapeo-server
 ```
 
+## Usage
+
+```js
+var Osm = require('osm-p2p')
+var blobstore = require('fs-blob-store')
+var Router = require('mapeo-server')
+
+var osm = Osm('./db')
+var media = blobstore('./media')
+
+var opts = {
+  staticRoot: '/path/to/my/static/files' // optional
+  datasetRoot: '/path/to/my/external/drive' //optional
+}
+
+var route = Router(osm, media, opts)
+
+var http = require('http')
+var server = http.createServer(function (req, res) {
+  var fn = route.handle(req, res)
+  if (fn) {
+    fn()
+  } else {
+    res.statusCode = 404
+    res.end('not found\n')
+  }
+})
+server.listen(5000)
+server.on('close', function () {
+  route.api.close()
+})
+```
+
+### Use as Express middleware
+
+```js
+app.use('/api', Router(dir))
+```
+
 ## Routes
 
 The following routes are available.
@@ -256,12 +295,10 @@ Settings that can be modified on the fly by the client.
 
 ```json
 {
-  "datasets": {
-    "root": "/path/to/my/usb/stick"
-  },
+  "datasetRoot": "/path/to/my/external/drive",
   "media": {
     "mode": "sync"
-  },
+  }
 }
 
 ```
@@ -275,37 +312,3 @@ Get the settings for the current mapeo-server instance.
 
 Update a settings field from the client.
 
-## Usage
-
-```js
-var Osm = require('osm-p2p')
-var blobstore = require('fs-blob-store')
-var Router = require('mapeo-server')
-
-var osm = Osm('./db')
-var media = blobstore('./media')
-
-var root = '/path/to/my/static/files' // optional
-var route = Router(osm, media, {staticRoot: root})
-
-var http = require('http')
-var server = http.createServer(function (req, res) {
-  var fn = route.handle(req, res)
-  if (fn) {
-    fn()
-  } else {
-    res.statusCode = 404
-    res.end('not found\n')
-  }
-})
-server.listen(5000)
-server.on('close', function () {
-  route.api.close()
-})
-```
-
-### Use as Express middleware
-
-```js
-app.use('/api', Router(dir))
-```
