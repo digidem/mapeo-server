@@ -244,6 +244,11 @@ Currently, datasets are not designed to be merged so it is important that any
 data that you want to view together in the same map is contained in a single
 dataset. 
 
+The benefit of using datasets is the client does not have to manage their own
+filepaths for data sync to USB - mapeo-core does that for them. Users can also
+update the name of files as long as they keep the same file extension that is
+originally generated. 
+
 A dataset has a few basic user data fields that can be accessed and updated for easily
 identifying datasets in a user interface:
 
@@ -255,17 +260,14 @@ identifying datasets in a user interface:
 |preset|string|optional|The [preset](#presets) id.|
 |timestamp|integer|optional|The UNIX timestamp when the file was last synced.|
 
-The client must pass in a `root` which is the filepath for the datasets. When
-the client syncs with a given dataset, mapeo will look in this root
-directory and scan all files, read the user data for each sync file, and see if
-a file with a matching dataset id already exists. If there is a matching
-dataset id, then it will sync to that file. If the file does not exist, it will
-create a new syncfile at that location. 
+To enable datasets, the `mapeo-server` constructor must have set
+a `datasetRoot` which is root folder for the datasets. When the client syncs
+with a given dataset, mapeo will look in this root directory and scan all
+files, read the user data for each sync file, and see if a file with a matching
+dataset id already exists. If there is a matching dataset id, then it will sync
+to that file. If the file does not exist, it will create a new syncfile at that
+location. 
 
-The benefit of using datasets is the client does not have to manage their own
-filepaths for data sync to USB - mapeo-core does that for them. Users can also
-update the name of files as long as they keep the same file extension that is
-originally generated. 
 
 #### `GET /datasets/:id`
 
