@@ -37,6 +37,9 @@ module.exports = function (osm, media, opts) {
   router.addRoute('GET /sync/announce',        api.syncAnnounce.bind(api))
   router.addRoute('GET /sync/unannounce',      api.syncClose.bind(api))
 
+  router.addRoute('GET /settings',             api.settingsGet.bind(api))
+  router.addRoute('PUT /settings',             api.settingsUpdate.bind(api))
+
   return {
     api,
     handle: function (req, res) {

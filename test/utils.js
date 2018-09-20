@@ -33,6 +33,7 @@ function check (t, href, expected, done) {
 }
 
 function postJson (href, data, cb) {
+  if (typeof data === 'object') data = JSON.stringify(data)
   var hq = hyperquest.post(href, { headers: { 'content-type': 'application/json' } })
   hq.on('response', function (res) {
     hq.pipe(concat({ encoding: 'string' }, function (body) {
@@ -42,14 +43,15 @@ function postJson (href, data, cb) {
   hq.end(data)
 }
 
-function putJson (href, cb) {
+function putJson (href, data, cb) {
+  if (typeof data === 'object') data = JSON.stringify(data)
   var hq = hyperquest.put(href, { headers: { 'content-type': 'application/json' } })
   hq.on('response', function (res) {
     hq.pipe(concat({ encoding: 'string' }, function (body) {
       cb(JSON.parse(body))
     }))
   })
-  hq.end()
+  hq.end(data)
 }
 
 function getJson (href, cb) {

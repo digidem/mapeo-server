@@ -244,7 +244,7 @@ test('observations: update tags', function (t) {
 
 test('observations: update with invalid id fails gracefully', function (t) {
   createServer(function (server, base, osm, media) {
-    putJson(`${base}/observations/null`, function (elm) {
+    putJson(`${base}/observations/null`, '', function (elm) {
       t.ok(elm.error)
       server.close()
       t.end()
@@ -335,7 +335,7 @@ test('observations: create + convert', function (t) {
       t.error(err)
 
       // convert to node
-      putJson(`${base}/observations/to-element/${id}`, function (elm) {
+      putJson(`${base}/observations/to-element/${id}`, '', function (elm) {
         t.error(elm.error)
         t.ok(elm.id)
 
@@ -351,7 +351,7 @@ test('observations: create + convert', function (t) {
 
             // try to convert observation *again* and ensure the same id comes
             // back
-            putJson(`${base}/observations/to-element/${id}`, function (oldElm) {
+            putJson(`${base}/observations/to-element/${id}`, '', function (oldElm) {
               t.error(oldElm.error)
               t.equals(oldElm.id, elm.id)
 

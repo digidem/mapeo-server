@@ -3,6 +3,7 @@ var fs = require('fs')
 var sync = require('mapeo-sync')
 var path = require('path')
 var body = require('body/json')
+var pick = require('lodash/pick')
 var randombytes = require('randombytes')
 var asar = require('asar')
 var ecstatic = require('ecstatic')
@@ -12,6 +13,8 @@ var errors = require('./errors')
 
 module.exports = Api
 
+const MODIFIABLE_SETTINGS = ['datasetRoot', 'staticRoot']
+
 function Api (osm, media, opts) {
   if (!(this instanceof Api)) return new Api(osm, media, opts)
   if (!opts) opts = {}
@@ -19,7 +22,8 @@ function Api (osm, media, opts) {
   this.media = media
   var defaultOpts = {
     id: 'MapeoDesktop_' + randombytes(8).toString('hex'),
-    staticRoot: '.'
+    staticRoot: '.',
+    media: {mode: 'sync'}
   }
   this.opts = Object.assign(defaultOpts, opts)
   this.staticRoot = this.opts.staticRoot
@@ -395,6 +399,26 @@ Api.prototype.syncToTarget = function (req, res, m, params) {
   }
 }
 
+
+Api.prototype.settingsGet = function (req, res, m) {
+  res.setHeader('content-type', 'application/json')
+  res.end(JSON.stringify(pick(this.opts, MODIFIABLE_SETTINGS)))
+}
+
+Api.prototype.settingsUpdate = function (req, res, m) {
+  var self = this
+  body(req, function (err, obj) {
+    if (err) return handleError(res, errors.JSONParseError())
+    try {
+      validateSettings(obj)
+    } catch (err) {
+      return handleError(res, errors.InvalidFields(err.message))
+    }
+    self.opts = Object.assign(self.opts, pick(obj, MODIFIABLE_SETTINGS))
+    return self.settingsGet(req, res, m)
+  })
+}
+
 Api.prototype.close = function (cb) {
   this.sync.close(cb)
 }
@@ -464,6 +488,11 @@ function validateObservation (obs) {
       throw new Error('lon and lat must be a number')
     }
   }
+}
+
+function validateSettings (obj) {
+  if (!obj) throw new Error('Settings are undefined')
+  if (obj.datasetRoot && typeof obj.datasetRoot !== 'string') throw new Error('datasetRoot option must be of type string')
 }
 
 var VALID_PROPS = ['lon', 'lat', 'attachments', 'tags', 'ref']
