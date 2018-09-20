@@ -162,8 +162,9 @@ Each sync target is an object with `ip`, `port`, and `host`.
 
 Options
 
-  * `filename`: For local filesystem sync, provide filename
   * `port` and `host`: To sync with another target through TCP (UDP?)
+  * `dataset`: dataset id, string (filepaths managed internally)
+  * `filename`: For local filesystem sync (manage export yourself, pass the absolute filename) 
 
 Start syncing and listen to progress events. Events are returned as a newline-delimited JSON stream.
 
@@ -195,6 +196,84 @@ stream.on('data', function (data) {
 })
 
 ```
+
+### Datasets
+
+A dataset is an instance of map data that includes monitoring, mapping, and
+media data in one bundle that can be synced between Mapeo Core instances.
+Currently, datasets are not designed to be merged so it is important that any
+data that you want to view together in the same map is contained in a single
+dataset. 
+
+A dataset has a few basic user data fields that can be accessed and updated for easily
+identifying datasets in a user interface:
+
+|field|type|required|description|
+|---|---|---|---| 
+|id|string|required|A unique identifier.|
+|name|string|required|A human-readable name.|
+|description|string|optional|A human-readable description.|
+|preset|string|optional|The [preset](#presets) id.|
+|timestamp|integer|optional|The UNIX timestamp when the file was last synced.|
+
+The client must pass in a `root` which is the filepath for the datasets. When
+the client syncs with a given dataset, mapeo will look in this root
+directory and scan all files, read the user data for each sync file, and see if
+a file with a matching dataset id already exists. If there is a matching
+dataset id, then it will sync to that file. If the file does not exist, it will
+create a new syncfile at that location. 
+
+The benefit of using datasets is the client does not have to manage their own
+filepaths for data sync to USB - mapeo-core does that for them. Users can also
+update the name of files as long as they keep the same file extension that is
+originally generated. 
+
+#### `GET /datasets/:id`
+
+Get the information related to a dataset.
+
+#### `PUT /datasets/:id`
+
+Update a field for the given dataset. For example:
+
+```
+$ curl -X PUT -H "Content-Type: application/json" -d '{"name": "Waorani Dataset"}' http://localhost:5000/datasets/waorani 
+```
+
+Returns the dataset as JSON with (optionally) new timestamp.
+
+#### `POST /datasets/:id`
+
+Create a new dataset with the given id. Returns the dataset as JSON. If no `name` passed through the JSON body, then the `id` will be used as the name.
+
+#### `DELETE /datasets/:id`
+
+Delete a dataset with the given id. 
+
+### Settings
+
+Settings that can be modified on the fly by the client. 
+
+```json
+{
+  "datasets": {
+    "root": "/path/to/my/usb/stick"
+  },
+  "media": {
+    "mode": "sync"
+  },
+}
+
+```
+
+
+#### `GET /settings/`
+
+Get the settings for the current mapeo-server instance.
+
+#### `PUT /settings/`
+
+Update a settings field from the client.
 
 ## Usage
 
