@@ -2,6 +2,7 @@ var test = require('tape')
 var hyperquest = require('hyperquest')
 var {createServer} = require('./server')
 var concat = require('concat-stream')
+var isodate = require('@segment/isodate')
 
 test('observations: create', function (t) {
   createServer(function (server, base) {
@@ -21,9 +22,10 @@ test('observations: create', function (t) {
     hq.pipe(concat({ encoding: 'string' }, function (body) {
       try {
         var obj = JSON.parse(body)
-        t.ok(obj.id, 'id field set')
-        t.ok(obj.version, 'version field set')
-        t.ok(obj.timestamp, 'timestamp field set')
+        t.equal(typeof obj.id, 'string', 'id field is string')
+        t.equal(typeof obj.version, 'string', 'version field is string')
+        t.ok(isodate.is(obj.timestamp), 'timestamp field set')
+        t.ok(isodate.is(obj.created_at), 'created_at field set')
       } catch (e) {
         t.error(e, 'json parsing exception!')
       }
@@ -32,6 +34,45 @@ test('observations: create', function (t) {
     }))
 
     hq.end(JSON.stringify({lat: 5, lon: -0.123, type: 'observation'}))
+  })
+})
+
+test('observations: create - preserves created_at passed by client', function (t) {
+  createServer(function (server, base) {
+    var href = base + '/observations'
+    var createdAt = (new Date(2018, 0, 1)).toISOString()
+
+    var hq = hyperquest.post(href, {
+      headers: { 'content-type': 'application/json' }
+    })
+
+    // http response
+    hq.once('response', function (res) {
+      t.equal(res.statusCode, 200, 'create 200 ok')
+      t.equal(res.headers['content-type'], 'application/json', 'type correct')
+    })
+
+    // response content
+    hq.pipe(concat({ encoding: 'string' }, function (body) {
+      try {
+        var obj = JSON.parse(body)
+        t.equal(typeof obj.id, 'string', 'id field is string')
+        t.equal(typeof obj.version, 'string', 'version field is string')
+        t.ok(isodate.is(obj.timestamp), 'timestamp field set')
+        t.equal(obj.created_at, createdAt, 'created_at field from client')
+      } catch (e) {
+        t.error(e, 'json parsing exception!')
+      }
+      server.close()
+      t.end()
+    }))
+
+    hq.end(JSON.stringify({
+      lat: 5,
+      lon: -0.123,
+      type: 'observation',
+      created_at: createdAt
+    }))
   })
 })
 

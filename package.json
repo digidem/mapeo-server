@@ -32,6 +32,7 @@
     "xtend": "^4.0.1"
   },
   "devDependencies": {
+    "@segment/isodate": "^1.0.3",
     "abstract-blob-store": "^3.3.4",
     "concat-stream": "^1.6.2",
     "hyperquest": "^2.1.3",

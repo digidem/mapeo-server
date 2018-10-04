@@ -87,6 +87,7 @@ Api.prototype.observationCreate = function (req, res, m) {
     const newObs = whitelistProps(obs)
     newObs.type = 'observation'
     newObs.timestamp = (new Date().toISOString())
+    newObs.created_at = obs.created_at || (new Date().toISOString())
 
     self.osm.create(newObs, function (err, _, node) {
       if (err) return handleError(res, err)
@@ -466,7 +467,7 @@ function validateObservation (obs) {
   }
 }
 
-var VALID_PROPS = ['lon', 'lat', 'attachments', 'tags', 'ref']
+var VALID_PROPS = ['lon', 'lat', 'attachments', 'tags', 'ref', 'created_at']
 
 // Filter whitelisted props
 function whitelistProps (obs) {
