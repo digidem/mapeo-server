@@ -467,7 +467,15 @@ function validateObservation (obs) {
   }
 }
 
-var VALID_PROPS = ['lon', 'lat', 'attachments', 'tags', 'ref', 'created_at']
+var VALID_PROPS = [
+  'lon',
+  'lat',
+  'attachments',
+  'tags',
+  'ref',
+  'created_at',
+  'metadata'
+]
 
 // Filter whitelisted props
 function whitelistProps (obs) {
