@@ -391,6 +391,88 @@ test('observations: try to update with bad id', function (t) {
   })
 })
 
+test('observations: convert old format observations', function (t) {
+  var oldObs = {
+    device_id: '1',
+    type: 'observation',
+    lat: 53.42769424,
+    lon: -2.24193244,
+    link: 'link',
+    created: '2018-10-03T14:28:17.529Z',
+    name: 'Gathering Site',
+    notes: 'Did this good to',
+    observedBy: 'Tú',
+    attachments: ['c1816f964dfc19bf8f20a50ba873588e.jpg'],
+    icon: null,
+    categoryId: 'gathering-site',
+    fields: [
+      {
+        name: 'source',
+        id: 'source',
+        type: 'text',
+        placeholder: 'Source of the data',
+        answered: true,
+        answer: 'He had food do if'
+      },
+      {
+        name: 'animal-type',
+        id: 'items-gathered',
+        type: 'text',
+        placeholder: 'What is collected here',
+        answered: true,
+        answer: 'Just called say did go'
+      }
+    ],
+    created_at_timestamp: 1538576998821,
+    version: '753c4c768c109bf4e1ab5b957d61bf78f2c52ab429c6226b3f54682d38fd8f9e'
+  }
+  var expected = {
+    tags: {
+      name: 'Gathering Site',
+      notes: 'Did this good to',
+      icon: null,
+      categoryId: 'gathering-site',
+      source: 'He had food do if',
+      'items-gathered': 'Just called say did go',
+      fields: [
+        {
+          name: 'source',
+          id: 'source',
+          type: 'text',
+          placeholder: 'Source of the data',
+          answered: true,
+          answer: 'He had food do if'
+        },
+        {
+          name: 'animal-type',
+          id: 'items-gathered',
+          type: 'text',
+          placeholder: 'What is collected here',
+          answered: true,
+          answer: 'Just called say did go'
+        }
+      ]
+    },
+    type: 'observation',
+    lat: 53.42769424,
+    lon: -2.24193244,
+    created_at: '2018-10-03T14:28:17.529Z',
+    attachments: [ {id: 'c1816f964dfc19bf8f20a50ba873588e.jpg'} ]
+  }
+  createServer(function (server, base, osm, media) {
+    osm.create(oldObs, function (err, id, node) {
+      t.error(err)
+      getJson(`${base}/observations/${id}`, function (theElms) {
+        delete theElms[0].version
+        delete theElms[0].id
+        t.deepEqual(theElms[0], expected, 'observation converted correctly')
+        server.close()
+        t.end()
+      })
+    })
+  })
+})
+
 test('observations: create + convert', function (t) {
   createServer(function (server, base, osm, media) {
     var og = {
