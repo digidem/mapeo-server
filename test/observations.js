@@ -26,6 +26,7 @@ test('observations: create', function (t) {
         t.equal(typeof obj.version, 'string', 'version field is string')
         t.ok(isodate.is(obj.timestamp), 'timestamp field set')
         t.ok(isodate.is(obj.created_at), 'created_at field set')
+        t.deepEqual(obj.metadata, {foo: 'bar'}, 'metadata passed through')
       } catch (e) {
         t.error(e, 'json parsing exception!')
       }
@@ -33,7 +34,14 @@ test('observations: create', function (t) {
       t.end()
     }))
 
-    hq.end(JSON.stringify({lat: 5, lon: -0.123, type: 'observation'}))
+    hq.end(JSON.stringify({
+      lat: 5,
+      lon: -0.123,
+      type: 'observation',
+      metadata: {
+        foo: 'bar'
+      }
+    }))
   })
 })
 
@@ -218,6 +226,27 @@ test('observations: update ref', function (t) {
   var expected = {
     type: 'observation',
     ref: 12111
+  }
+  testUpdateObservation(t, original, update, expected, function () {
+    t.end()
+  })
+})
+
+test('observations: update metadata', function (t) {
+  var original = {
+    lat: 1,
+    lon: 2,
+    type: 'observation',
+    metadata: {foo: 'bar', qux: 'nux'},
+    timestamp: new Date().toISOString()
+  }
+  var update = {
+    type: 'observation',
+    metadata: {foo: 'noo'}
+  }
+  var expected = {
+    type: 'observation',
+    metadata: {foo: 'noo'}
   }
   testUpdateObservation(t, original, update, expected, function () {
     t.end()
