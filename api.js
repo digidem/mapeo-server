@@ -59,7 +59,7 @@ Api.prototype.observationList = function (req, res, m) {
     })
     .once('end', function () {
       res.setHeader('content-type', 'application/json')
-      res.end(JSON.stringify(results))
+      res.end(JSON.stringify(results.map(transformOldObservations)))
     })
     .once('error', function (err) {
       return handleError(res, errors(err))
@@ -70,7 +70,7 @@ Api.prototype.observationGet = function (req, res, m) {
   this.osm.get(m.id, function (err, obses) {
     if (err) return handleError(res, err)
     res.setHeader('content-type', 'application/json')
-    res.end(JSON.stringify(flatObs(m.id, obses)))
+    res.end(JSON.stringify(flatObs(m.id, obses).map(transformOldObservations)))
   })
 }
 
@@ -467,7 +467,8 @@ function validateObservation (obs) {
   }
 }
 
-var VALID_PROPS = [
+// Top-level props that can be modified by the user/client
+var USER_UPDATABLE_PROPS = [
   'lon',
   'lat',
   'attachments',
@@ -477,11 +478,68 @@ var VALID_PROPS = [
   'metadata'
 ]
 
-// Filter whitelisted props
+// Filter whitelisted props the user can update
 function whitelistProps (obs) {
   var newObs = {}
-  VALID_PROPS.forEach(function (prop) {
+  USER_UPDATABLE_PROPS.forEach(function (prop) {
     newObs[prop] = obs[prop]
   })
   return newObs
+}
+
+// All valid top-level props
+var TOP_LEVEL_PROPS = USER_UPDATABLE_PROPS.concat([
+  'timestamp',
+  'id',
+  'version',
+  'type'
+])
+
+// Props from old versions of mapeo-mobile that we can discard
+var SKIP_OLD_PROPS = [
+  'created_at_timestamp',
+  'link',
+  'device_id',
+  'observedBy'
+]
+
+// Transform an observation from a previous version of MM to the current format
+function transformOldObservations (obs) {
+  if (!isOldFormatObservation(obs)) return obs
+  var newObs = { tags: {} }
+  Object.keys(obs).forEach(function (prop) {
+    if (prop === 'attachments') {
+      // Attachments has changed from array of strings to array of objects
+      newObs.attachments = (obs.attachments || []).map(a => {
+        if (typeof a !== 'string') return a
+        return { id: a }
+      })
+    } else if (SKIP_OLD_PROPS.indexOf(prop) > -1) {
+      // just ignore unused old props
+    } else if (TOP_LEVEL_PROPS.indexOf(prop) > -1) {
+      // Copy across valid top-level props
+      newObs[prop] = obs[prop]
+    } else if (prop === 'created') {
+      // created is changed to created_at
+      newObs.created_at = obs.created
+    } else if (prop === 'fields') {
+      // fields.answer should be a tag
+      newObs.tags.fields = obs.fields || []
+      newObs.tags.fields.forEach(f => {
+        if (!f || !f.answer || !f.id) return
+        newObs.tags[f.id] = f.answer
+      })
+    } else {
+      newObs.tags[prop] = obs[prop]
+    }
+  })
+  return newObs
+}
+
+// Test if an observation is in the old format
+function isOldFormatObservation (obs) {
+  return obs &&
+    typeof obs.device_id === 'string' &&
+    typeof obs.created === 'string' &&
+    typeof obs.tags === 'undefined'
 }
