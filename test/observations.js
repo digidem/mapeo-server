@@ -26,6 +26,7 @@ test('observations: create', function (t) {
         t.equal(typeof obj.version, 'string', 'version field is string')
         t.ok(isodate.is(obj.timestamp), 'timestamp field set')
         t.ok(isodate.is(obj.created_at), 'created_at field set')
+        t.equal(obj.schemaVersion, 3, 'could set schema version')
         t.deepEqual(obj.metadata, {foo: 'bar'}, 'metadata passed through')
       } catch (e) {
         t.error(e, 'json parsing exception!')
@@ -40,7 +41,8 @@ test('observations: create', function (t) {
       type: 'observation',
       metadata: {
         foo: 'bar'
-      }
+      },
+      schemaVersion: 3
     }))
   })
 })
@@ -415,7 +417,7 @@ test('observations: try to update with bad id', function (t) {
   })
 })
 
-test('observations: convert old format observations', function (t) {
+test('observations: convert schema 1 observations', function (t) {
   var oldObs = {
     device_id: '1',
     type: 'observation',
@@ -483,6 +485,85 @@ test('observations: convert old format observations', function (t) {
     created_at: '2018-10-03T14:28:17.529Z',
     attachments: [ {id: 'c1816f964dfc19bf8f20a50ba873588e.jpg'} ]
   }
+  createServer(function (server, base, osm, media) {
+    osm.create(oldObs, function (err, id, node) {
+      t.error(err)
+      getJson(`${base}/observations/${id}`, function (theElms) {
+        delete theElms[0].version
+        delete theElms[0].id
+        t.deepEqual(theElms[0], expected, 'observation converted correctly')
+        server.close()
+        t.end()
+      })
+    })
+  })
+})
+
+test('observations: convert schema 2 observations', function (t) {
+  var oldObs = {
+    lon: 0,
+    lat: 0,
+    attachments: [{ id: '77bc7ebd7c8583e6d6cd376e6b2a7dc8.jpg' }],
+    tags: {
+      created: '2018-10-05T10:44:16.554Z',
+      name: 'Building',
+      notes: 'When all the',
+      categoryId: 'building',
+      fields: [
+        {
+          name: 'source',
+          id: 'source',
+          type: 'text',
+          placeholder: 'Source of the data',
+          answered: true,
+          answer: 'Can h him v can'
+        },
+        {
+          name: 'building-type',
+          id: 'building-type',
+          type: 'text',
+          placeholder: 'School/hospital/etc',
+          answered: false,
+          answer: ''
+        }
+      ]
+    },
+    type: 'observation',
+    timestamp: '2018-10-05T10:44:57.420Z'
+  }
+
+  var expected = {
+    lon: 0,
+    lat: 0,
+    attachments: [{ id: '77bc7ebd7c8583e6d6cd376e6b2a7dc8.jpg' }],
+    created_at: '2018-10-05T10:44:16.554Z',
+    tags: {
+      name: 'Building',
+      notes: 'When all the',
+      categoryId: 'building'
+    },
+    fields: [
+      {
+        name: 'source',
+        id: 'source',
+        type: 'text',
+        placeholder: 'Source of the data',
+        answered: true,
+        answer: 'Can h him v can'
+      },
+      {
+        name: 'building-type',
+        id: 'building-type',
+        type: 'text',
+        placeholder: 'School/hospital/etc',
+        answered: false,
+        answer: ''
+      }
+    ],
+    type: 'observation',
+    timestamp: '2018-10-05T10:44:57.420Z'
+  }
+
   createServer(function (server, base, osm, media) {
     osm.create(oldObs, function (err, id, node) {
       t.error(err)
