@@ -89,8 +89,8 @@ Api.prototype.observationCreate = function (req, res, m) {
     const newObs = whitelistProps(obs)
     newObs.type = 'observation'
     newObs.schemaVersion = obs.schemaVersion || CURRENT_SCHEMA
-    newObs.timestamp = (new Date().toISOString())
-    newObs.created_at = obs.created_at || (new Date().toISOString())
+    newObs.timestamp = (new Date()).toISOString()
+    newObs.created_at = (new Date()).toISOString()
 
     self.osm.create(newObs, function (err, _, node) {
       if (err) return handleError(res, err)
@@ -493,6 +493,7 @@ function whitelistProps (obs) {
 
 // All valid top-level props
 var TOP_LEVEL_PROPS = USER_UPDATABLE_PROPS.concat([
+  'created_at',
   'timestamp',
   'id',
   'version',
