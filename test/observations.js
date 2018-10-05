@@ -47,7 +47,7 @@ test('observations: create', function (t) {
   })
 })
 
-test('observations: create - preserves created_at passed by client', function (t) {
+test('observations: create - ignores created_at passed by client', function (t) {
   createServer(function (server, base) {
     var href = base + '/observations'
     var createdAt = (new Date(2018, 0, 1)).toISOString()
@@ -69,7 +69,7 @@ test('observations: create - preserves created_at passed by client', function (t
         t.equal(typeof obj.id, 'string', 'id field is string')
         t.equal(typeof obj.version, 'string', 'version field is string')
         t.ok(isodate.is(obj.timestamp), 'timestamp field set')
-        t.equal(obj.created_at, createdAt, 'created_at field from client')
+        t.notEqual(obj.created_at, createdAt, 'created_at field ignored from client')
       } catch (e) {
         t.error(e, 'json parsing exception!')
       }
