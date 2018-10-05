@@ -474,7 +474,8 @@ var USER_UPDATABLE_PROPS = [
   'attachments',
   'tags',
   'ref',
-  'metadata'
+  'metadata',
+  'fields'
 ]
 
 // Filter whitelisted props the user can update
@@ -513,6 +514,13 @@ function transformOldObservations (obs) {
         if (typeof a !== 'string') return a
         return { id: a }
       })
+    } else if (prop === 'fields') {
+      // fields.answer should be a tag
+      newObs.fields = obs.fields || []
+      newObs.fields.forEach(f => {
+        if (!f || !f.answer || !f.id) return
+        newObs.tags[f.id] = f.answer
+      })
     } else if (SKIP_OLD_PROPS.indexOf(prop) > -1) {
       // just ignore unused old props
     } else if (TOP_LEVEL_PROPS.indexOf(prop) > -1) {
@@ -521,13 +529,6 @@ function transformOldObservations (obs) {
     } else if (prop === 'created') {
       // created is changed to created_at
       newObs.created_at = obs.created
-    } else if (prop === 'fields') {
-      // fields.answer should be a tag
-      newObs.tags.fields = obs.fields || []
-      newObs.tags.fields.forEach(f => {
-        if (!f || !f.answer || !f.id) return
-        newObs.tags[f.id] = f.answer
-      })
     } else {
       newObs.tags[prop] = obs[prop]
     }

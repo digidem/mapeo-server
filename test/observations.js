@@ -457,26 +457,26 @@ test('observations: convert old format observations', function (t) {
       icon: null,
       categoryId: 'gathering-site',
       source: 'He had food do if',
-      'items-gathered': 'Just called say did go',
-      fields: [
-        {
-          name: 'source',
-          id: 'source',
-          type: 'text',
-          placeholder: 'Source of the data',
-          answered: true,
-          answer: 'He had food do if'
-        },
-        {
-          name: 'animal-type',
-          id: 'items-gathered',
-          type: 'text',
-          placeholder: 'What is collected here',
-          answered: true,
-          answer: 'Just called say did go'
-        }
-      ]
+      'items-gathered': 'Just called say did go'
     },
+    fields: [
+      {
+        name: 'source',
+        id: 'source',
+        type: 'text',
+        placeholder: 'Source of the data',
+        answered: true,
+        answer: 'He had food do if'
+      },
+      {
+        name: 'animal-type',
+        id: 'items-gathered',
+        type: 'text',
+        placeholder: 'What is collected here',
+        answered: true,
+        answer: 'Just called say did go'
+      }
+    ],
     type: 'observation',
     lat: 53.42769424,
     lon: -2.24193244,
