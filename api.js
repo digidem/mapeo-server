@@ -474,7 +474,6 @@ var USER_UPDATABLE_PROPS = [
   'attachments',
   'tags',
   'ref',
-  'created_at',
   'metadata'
 ]
 

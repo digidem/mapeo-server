@@ -253,6 +253,30 @@ test('observations: update metadata', function (t) {
   })
 })
 
+test('observations: update to created_at ignored', function (t) {
+  var original = {
+    lat: 1,
+    lon: 2,
+    type: 'observation',
+    metadata: {foo: 'bar', qux: 'nux'},
+    timestamp: new Date().toISOString(),
+    created_at: (new Date(2018, 0, 1)).toISOString()
+  }
+  var update = {
+    type: 'observation',
+    metadata: {foo: 'noo'},
+    created_at: (new Date(2001, 0, 1)).toISOString()
+  }
+  var expected = {
+    type: 'observation',
+    metadata: {foo: 'noo'},
+    created_at: (new Date(2018, 0, 1)).toISOString()
+  }
+  testUpdateObservation(t, original, update, expected, function () {
+    t.end()
+  })
+})
+
 test('observations: update attachments', function (t) {
   var original = {
     lat: 1,
