@@ -241,4 +241,3 @@ function sprintf (template, values) {
     return values.shift() || ''
   }).replace(/ {2}/g, ' ').trim() + (values.length ? '\n' + values.join('\n') : '')
 }
-

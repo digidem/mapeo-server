@@ -114,7 +114,7 @@ test('observations: create + delete', function (t) {
 
 test('observations: create + get', function (t) {
   createServer(function (server, base, osm, media) {
-    osm.create({lat:1,lon:2,type:'observation'}, function (err, id, node) {
+    osm.create({lat: 1, lon: 2, type: 'observation'}, function (err, id, node) {
       t.error(err)
 
       var expected = {
@@ -155,12 +155,12 @@ test('observations: create + get', function (t) {
 
 test('observations: create + list', function (t) {
   createServer(function (server, base, osm, media) {
-    osm.create({lat:1,lon:2,type:'observation'}, function (err, id, node) {
+    osm.create({lat: 1, lon: 2, type: 'observation'}, function (err, id, node) {
       t.error(err)
 
       // create a fork of the above observation
-      var obs2 = {lat:2,lon:2,type:'observation'}
-      osm.batch([{type:'put',key:id,links:[],value:obs2}], function (err, nodes) {
+      var obs2 = {lat: 2, lon: 2, type: 'observation'}
+      osm.batch([{type: 'put', key: id, links: [], value: obs2}], function (err, nodes) {
         t.error(err)
         var expected = [
           {
