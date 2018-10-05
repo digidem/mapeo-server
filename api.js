@@ -10,6 +10,8 @@ var xtend = require('xtend')
 
 var errors = require('./errors')
 
+var CURRENT_SCHEMA = 3
+
 module.exports = Api
 
 function Api (osm, media, opts) {
@@ -59,7 +61,7 @@ Api.prototype.observationList = function (req, res, m) {
     })
     .once('end', function () {
       res.setHeader('content-type', 'application/json')
-      res.end(JSON.stringify(results.map(transformOldObservations)))
+      res.end(JSON.stringify(results.map(transformOldObservation)))
     })
     .once('error', function (err) {
       return handleError(res, errors(err))
@@ -70,7 +72,7 @@ Api.prototype.observationGet = function (req, res, m) {
   this.osm.get(m.id, function (err, obses) {
     if (err) return handleError(res, err)
     res.setHeader('content-type', 'application/json')
-    res.end(JSON.stringify(flatObs(m.id, obses).map(transformOldObservations)))
+    res.end(JSON.stringify(flatObs(m.id, obses).map(transformOldObservation)))
   })
 }
 
@@ -86,6 +88,7 @@ Api.prototype.observationCreate = function (req, res, m) {
     }
     const newObs = whitelistProps(obs)
     newObs.type = 'observation'
+    newObs.schemaVersion = obs.schemaVersion || CURRENT_SCHEMA
     newObs.timestamp = (new Date().toISOString())
     newObs.created_at = obs.created_at || (new Date().toISOString())
 
@@ -475,7 +478,8 @@ var USER_UPDATABLE_PROPS = [
   'tags',
   'ref',
   'metadata',
-  'fields'
+  'fields',
+  'schemaVersion'
 ]
 
 // Filter whitelisted props the user can update
@@ -503,9 +507,19 @@ var SKIP_OLD_PROPS = [
   'observedBy'
 ]
 
-// Transform an observation from a previous version of MM to the current format
-function transformOldObservations (obs) {
-  if (!isOldFormatObservation(obs)) return obs
+function transformOldObservation (obs) {
+  switch (getSchemaVersion(obs)) {
+    case 1:
+      return transformObservationSchema1(obs)
+    case 2:
+      return transformObservationSchema2(obs)
+    default:
+      return obs
+  }
+}
+
+// Transform an observation from Sinangoe version of MM to the current format
+function transformObservationSchema1 (obs) {
   var newObs = { tags: {} }
   Object.keys(obs).forEach(function (prop) {
     if (prop === 'attachments') {
@@ -536,10 +550,28 @@ function transformOldObservations (obs) {
   return newObs
 }
 
-// Test if an observation is in the old format
-function isOldFormatObservation (obs) {
-  return obs &&
-    typeof obs.device_id === 'string' &&
+// Transform an observation from ECA version of MM to the current format
+function transformObservationSchema2 (obs) {
+  var newObs = Object.assign({}, obs, {tags: {}})
+  Object.keys(obs.tags || {}).forEach(function (prop) {
+    if (prop === 'fields') {
+      newObs.fields = obs.tags.fields
+    } else if (prop === 'created') newObs.created_at = obs.tags.created
+    else newObs.tags[prop] = obs.tags[prop]
+  })
+  return newObs
+}
+
+// Get the schema version of the observation
+// Prior to schema 3 we had two beta testing schemas in the wild
+// which did not have a schemaVersion property
+function getSchemaVersion (obs) {
+  if (obs.schemaVersion) return obs.schemaVersion
+  if (typeof obs.device_id === 'string' &&
     typeof obs.created === 'string' &&
-    typeof obs.tags === 'undefined'
+    typeof obs.tags === 'undefined') return 1
+  if (typeof obs.created_at === 'undefined' &&
+    typeof obs.tags !== 'undefined' &&
+    typeof obs.tags.created === 'string') return 2
+  return null
 }
