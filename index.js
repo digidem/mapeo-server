@@ -35,7 +35,8 @@ module.exports = function (osm, media, opts) {
   router.addRoute('GET /sync/start',           api.syncToTarget.bind(api))
   router.addRoute('GET /sync/targets',         api.getSyncTargets.bind(api))
   router.addRoute('GET /sync/announce',        api.syncAnnounce.bind(api))
-  router.addRoute('GET /sync/unannounce',      api.syncClose.bind(api))
+  router.addRoute('GET /sync/unannounce',      api.syncUnannounce.bind(api))
+  router.addRoute('GET /sync/stop',            api.syncClose.bind(api))
 
   return {
     api,

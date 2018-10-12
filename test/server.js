@@ -5,6 +5,7 @@ var http = require('http')
 var Router = require('..')
 
 module.exports = {
+  stop,
   announce,
   unannounce,
   createServer,
@@ -69,6 +70,17 @@ function twoServers (opts, cb) {
     })
   })
 }
+
+function stop (a, b, cb) {
+  needle.get(a.base + '/sync/stop', function (err, resp, body) {
+    if (err) return cb(err)
+    needle.get(b.base + '/sync/stop', function (err, resp, body) {
+      if (err) return cb(err)
+      return cb()
+    })
+  })
+}
+
 
 function announce (a, b, cb) {
   needle.get(a.base + '/sync/announce', function (err, resp, body) {

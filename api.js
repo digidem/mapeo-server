@@ -348,6 +348,12 @@ Api.prototype.stylesGet = function (req, res, m) {
 }
 
 Api.prototype.syncClose = function (req, res, m) {
+  this.sync.close(function () {
+    res.end()
+  })
+}
+
+Api.prototype.syncUnannounce = function (req, res, m) {
   this.sync.unannounce(function () {
     res.end()
   })

@@ -158,6 +158,11 @@ Returns list of available sync targets. Right now, only lists other services bro
 
 Each sync target is an object with `ip`, `port`, and `host`.
 
+#### `GET /sync/stop`
+
+Close the underlying servers used for syncing data, will stop any currently
+active replication streams and unannounce the device from the WiFi network
+
 #### `GET /sync/start`
 
 Options
