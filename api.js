@@ -317,38 +317,58 @@ Api.prototype.stylesList = function (req, res, m) {
 }
 
 Api.prototype.stylesGetStyle = function (req, res, m) {
-  serveStyleFile(path.join(this.staticRoot, 'styles', m.id, 'style.json'), m.id, req, res)
+  var self = this
+  this._resolveStyleId(m.id, function (id) {
+    serveStyleFile(path.join(self.staticRoot, 'styles', id, 'style.json'), id, req, res)
+  })
 }
 
 Api.prototype.stylesGetStatic = function (req, res, m) {
-  ecstatic({
-    root: this.staticRoot,
-    handleError: false
-  })(req, res)
+  var self = this
+  this._resolveStyleId(m.id, function (id) {
+    req.url = req.url.replace(m.id, id)
+    ecstatic({
+      root: self.staticRoot,
+      handleError: false
+    })(req, res)
+  })
 }
 
 Api.prototype.stylesGet = function (req, res, m) {
   var self = this
-  var asarPath = path.join(self.staticRoot, 'styles', m.id, 'tiles', m.tileid + '.asar')
+  this._resolveStyleId(m.id, function (id) {
+    var asarPath = path.join(self.staticRoot, 'styles', id, 'tiles', m.tileid + '.asar')
 
-  var filename = [m.z, m.y, m.x].join('/') + '.' + m.ext
-  var buf = asarGet(asarPath, filename)
+    var filename = [m.z, m.y, m.x].join('/') + '.' + m.ext
+    var buf = asarGet(asarPath, filename)
 
-  if (buf) {
-    var mime
-    switch (m.ext) {
-      case 'png': mime = 'image/png'; break
-      case 'jpg': mime = 'image/jpg'; break
+    if (buf) {
+      var mime
+      switch (m.ext) {
+        case 'png': mime = 'image/png'; break
+        case 'jpg': mime = 'image/jpg'; break
+      }
+      if (mime) res.setHeader('content-type', mime)
+
+      // Set gzip encoding on {mvt,pbf} tiles.
+      if (/mvt|pbf$/.test(m.ext)) res.setHeader('content-encoding', 'gzip')
+
+      res.end(buf)
+    } else {
+      handleError(res, errors.NotFound())
     }
-    if (mime) res.setHeader('content-type', mime)
+  })
+}
 
-    // Set gzip encoding on {mvt,pbf} tiles.
-    if (/mvt|pbf$/.test(m.ext)) res.setHeader('content-encoding', 'gzip')
-
-    res.end(buf)
-  } else {
-    return handleError(res, errors.NotFound())
-  }
+Api.prototype._resolveStyleId = function (id, cb) {
+  // TODO: remove this once mapfilter has the ability to choose custom styles
+  // from the user interface.
+  var self = this
+  if (id !== 'mapfilter-style') return cb(id)
+  fs.access(path.join(self.staticRoot, 'styles', 'custom', 'style.json'), function (err) {
+    var newId = err ? 'mapfilter-style' : 'custom'
+    cb(newId)
+  })
 }
 
 Api.prototype.syncClose = function (req, res, m) {
