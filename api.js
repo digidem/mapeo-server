@@ -331,7 +331,7 @@ Api.prototype.stylesGet = function (req, res, m) {
   var self = this
   var asarPath = path.join(self.staticRoot, 'styles', m.id, 'tiles', m.tileid + '.asar')
 
-  var filename = [m.z, m.y, m.x].join('/') + '.' + m.ext
+  var filename = [m.z, m.y, m.x].join(path.sep) + '.' + m.ext
   var buf = asarGet(asarPath, filename)
 
   if (buf) {
