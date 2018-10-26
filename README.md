@@ -9,6 +9,25 @@ media management routes and static file routes for an offline tile server.
 $ npm install mapeo-server
 ```
 
+## API
+
+> var MapeoServer = require('mapeo-server')
+
+### var server = MapeoServer(osm, media[, opts])
+
+Creates a mapeo http server.
+
+`osm` is an [osm-p2p-db][osm-p2p-db] instance, like [osm-p2p][osm-p2p] or [osm-p2p-mem][osm-p2p-mem].
+
+`media` is an instance of [abstract-blob-store][abstract-blob-store]. In order to do sync correctly, it must be patched with a `list(cb)` method, or you can use a blob store that already supports this, like [safe-fs-blob-store][safe-fs-blob-store].
+
+Valid `opts` include
+- `staticRoot` (string): the filesystem path to serve static files, like styles and tiles from.
+
+### var handled = server.handle(req, res)
+
+Tries to handle an http request `req`, writing the result to `res`. Returns true if it was handled, and false if not.
+
 ## Routes
 
 The following routes are available.
@@ -84,7 +103,7 @@ Fetch a static file belonging to a preset with id `id`.
 
 ### Media
 
-#### `PUT /media?file=PATH&thumbnail=PATH
+#### `PUT /media?file=PATH&thumbnail=PATH`
 
 Save a piece of media (photos only), identified by the absolute file path `PATH`
 to the database. `PATH` should be URL encoded.
@@ -230,3 +249,14 @@ server.on('close', function () {
 ```js
 app.use('/api', Router(dir))
 ```
+
+## Caveats
+
+Relies on `fs` for media copying right now: this is a bug.
+
+[osm-p2p-db]: https://github.com/digidem/osm-p2p-db
+[osm-p2p]: https://github.com/digidem/osm-p2p
+[osm-p2p-mem]: https://github.com/digidem/osm-p2p-mem
+[abstact-blob-store]: https://github.com/maxogden/abstract-blob-store
+[safe-fs-blob-store]: https://github.com/noffle/safe-fs-blob-store
+
