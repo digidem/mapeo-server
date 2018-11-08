@@ -99,14 +99,9 @@ Api.prototype.observationConvert = function (req, res, m) {
 
 // Presets
 Api.prototype.presetsList = function (req, res, m) {
-  var self = this
-  res.setHeader('content-type', 'application/json')
-  fs.readdir(path.join(self.staticRoot, 'presets'), function (err, files) {
+  this.core.presetsList(path.join(this.staticRoot, 'presets'), function (err, files) {
     if (err) return handleError(res, err)
-    files = files
-      .filter(function (filename) {
-        return fs.statSync(path.join(self.staticRoot, 'presets', filename)).isDirectory()
-      })
+    res.setHeader('content-type', 'application/json')
     res.end(JSON.stringify(files))
   })
 }

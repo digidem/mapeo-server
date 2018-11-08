@@ -1,7 +1,10 @@
 var through = require('through2')
 var randombytes = require('randombytes')
-var errors = require('./errors')
 var sync = require('mapeo-sync')
+var fs = require('fs')
+var path = require('path')
+
+var errors = require('./errors')
 
 module.exports = Core
 
@@ -150,6 +153,17 @@ Core.prototype.observationStream = function () {
   })
 
   return this.osm.kv.createReadStream().pipe(parseObs)
+}
+
+Core.prototype.presetsList = function (target, cb) {
+  fs.readdir(target, function (err, files) {
+    if (err) return cb(err)
+    files = files
+      .filter(function (filename) {
+        return fs.statSync(path.join(target, filename)).isDirectory()
+      })
+    cb(null, files)
+  })
 }
 
 function flatObs (id, obses) {
