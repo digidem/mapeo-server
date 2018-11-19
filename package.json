@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "tape test/*.js",
+    "deps": "dependency-check .",
     "lint": "standard"
   },
   "repository": {
@@ -24,6 +25,8 @@
     "asar": "^0.14.3",
     "body": "^5.1.0",
     "debug": "^4.0.1",
+    "debug": "^4.1.0",
+    "mapeo-core": "^1.0.0",
     "ecstatic": "^3.2.1",
     "inherits": "^2.0.3",
     "randombytes": "^2.0.6",
