@@ -26,6 +26,9 @@ function Api (osm, media, opts) {
   this.opts = Object.assign(defaultOpts, opts)
   this.staticRoot = this.opts.staticRoot
   this.sync = sync(osm, media, this.opts)
+  this.sync.on('error', function (err) {
+    error(err)
+  })
 }
 
 function handleError (res, err) {
