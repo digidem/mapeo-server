@@ -26,7 +26,7 @@
     "debug": "^4.0.1",
     "ecstatic": "^3.2.1",
     "inherits": "^2.0.3",
-    "mapeo-sync": "^3.2.0",
+    "mapeo-sync": "^3.2.1",
     "randombytes": "^2.0.6",
     "routes": "^2.1.0",
     "statuses": "^1.5.0",
