@@ -114,18 +114,19 @@ test('observations: create + delete', function (t) {
 
 test('observations: create + get', function (t) {
   createServer(function (server, base, osm, media) {
-    osm.create({lat: 1, lon: 2, type: 'observation'}, function (err, id, node) {
-      t.error(err)
+    var data = {lat: 1, lon: 2, type: 'observation'}
+    postJson(base + '/observations', data, function (obs) {
+      t.error(obs.error)
 
       var expected = {
         lat: 1,
         lon: 2,
-        id: id,
+        id: obs.id,
         type: 'observation',
-        version: node.key
+        version: obs.version
       }
 
-      var href = base + '/observations/' + id
+      var href = base + '/observations/' + obs.id
 
       var hq = hyperquest.get(href, {
         headers: { 'content-type': 'application/json' }
@@ -142,7 +143,11 @@ test('observations: create + get', function (t) {
         try {
           var objs = JSON.parse(body)
           t.equals(objs.length, 1)
-          t.deepEquals(objs[0], expected, 'observation from server matches expected')
+          t.same(objs[0].version, expected.version)
+          t.same(objs[0].id, expected.id)
+          t.ok(objs[0].schemaVersion)
+          t.ok(objs[0].timestamp)
+          t.ok(objs[0].created_at)
         } catch (e) {
           t.error(e, 'json parsing exception!')
         }
@@ -155,29 +160,14 @@ test('observations: create + get', function (t) {
 
 test('observations: create + list', function (t) {
   createServer(function (server, base, osm, media) {
-    osm.create({lat: 1, lon: 2, type: 'observation'}, function (err, id, node) {
-      t.error(err)
+    var _obs1 = {lat: 2, lon: 2, type: 'observation'}
+    postJson(base + '/observations', _obs1, function (obs1) {
+      t.error(obs1.error)
 
-      // create a fork of the above observation
-      var obs2 = {lat: 2, lon: 2, type: 'observation'}
-      osm.batch([{type: 'put', key: id, links: [], value: obs2}], function (err, nodes) {
-        t.error(err)
-        var expected = [
-          {
-            lat: 1,
-            lon: 2,
-            id: id,
-            type: 'observation',
-            version: node.key
-          },
-          {
-            lat: 2,
-            lon: 2,
-            id: id,
-            type: 'observation',
-            version: nodes[0].key
-          }
-        ]
+      var _obs2 = {lat: 2, lon: 3, type: 'observation'}
+      postJson(base + '/observations', _obs2, function (obs2) {
+        t.error(obs2.error)
+        var expected = [ obs1, obs2 ]
         var href = base + '/observations'
         check(t, href, expected, function () {
           server.close()
@@ -226,6 +216,8 @@ test('observations: update ref', function (t) {
     ref: 12111
   }
   var expected = {
+    lat: 1,
+    lon: 2,
     type: 'observation',
     ref: 12111
   }
@@ -247,6 +239,8 @@ test('observations: update metadata', function (t) {
     metadata: {foo: 'noo'}
   }
   var expected = {
+    lat: 1,
+    lon: 2,
     type: 'observation',
     metadata: {foo: 'noo'}
   }
@@ -270,6 +264,8 @@ test('observations: update to created_at ignored', function (t) {
     created_at: (new Date(2001, 0, 1)).toISOString()
   }
   var expected = {
+    lat: 1,
+    lon: 2,
     type: 'observation',
     metadata: {foo: 'noo'},
     created_at: (new Date(2018, 0, 1)).toISOString()
@@ -301,6 +297,8 @@ test('observations: update attachments', function (t) {
     }]
   }
   var expected = {
+    lat: 1,
+    lon: 2,
     type: 'observation',
     attachments: [{
       id: '12345.jpg',
@@ -328,6 +326,8 @@ test('observations: update tags', function (t) {
     tags: { foo: 'bar', hey: 'there' }
   }
   var expected = {
+    lat: 1,
+    lon: 2,
     type: 'observation',
     tags: { foo: 'bar', hey: 'there' }
   }
@@ -635,7 +635,8 @@ function check (t, href, expected, done) {
   hq.pipe(concat({ encoding: 'string' }, function (body) {
     try {
       var objs = JSON.parse(body)
-      t.deepEquals(objs, expected, 'observation from server matches expected')
+      var sorter = (a, b) => Number(a.id) < Number(b.id)
+      t.deepEquals(objs.sort(sorter), expected.sort(sorter), 'observation from server matches expected')
     } catch (e) {
       t.error(e, 'json parsing exception!')
     }
@@ -644,6 +645,7 @@ function check (t, href, expected, done) {
 }
 
 function postJson (href, data, cb) {
+  if (typeof data !== 'string') data = JSON.stringify(data)
   var hq = hyperquest.post(href, { headers: { 'content-type': 'application/json' } })
   hq.on('response', function (res) {
     hq.pipe(concat({ encoding: 'string' }, function (body) {
@@ -701,7 +703,6 @@ function testUpdateObservation (t, orig, update, expected, cb) {
 
         hq.pipe(concat({ encoding: 'string' }, function (body) {
           var obs = JSON.parse(body)
-
           var obsCopy = Object.assign({}, obs)
           delete obsCopy.id
           delete obsCopy.version
