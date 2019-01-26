@@ -5,7 +5,7 @@ var body = require('body/json')
 var randombytes = require('randombytes')
 var asar = require('asar')
 var ecstatic = require('ecstatic')
-var Core = require('mapeo-core')
+var Core = require('@mapeo/core')
 var errors = Core.errors
 
 module.exports = Api
