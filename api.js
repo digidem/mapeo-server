@@ -134,13 +134,11 @@ Api.prototype.mediaGet = function (req, res, m) {
 Api.prototype.mediaPut = function (req, res, m, q) {
   if (!q.file || !fs.existsSync(q.file)) {
     res.statusCode = 400
-    res.end()
-    return
+    return handleError(res, new Error(`Filename ${q.file} does not exist`))
   }
   if (q.thumbnail && !fs.existsSync(q.thumbnail)) {
     res.statusCode = 400
-    res.end()
-    return
+    return handleError(res, new Error(`Filename ${q.thumbnail} does not exist`))
   }
 
   var self = this

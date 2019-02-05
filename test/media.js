@@ -40,6 +40,32 @@ test('media: upload + get', function (t) {
   })
 })
 
+test('media: upload + get when file doesnt exist', function (t) {
+  createServer(function (server, base, osm, media) {
+    var fpath = encodeURIComponent('test/data/this-file-doesnt-exist.jpg')
+    var href = base + '/media?file=' + fpath
+
+    var hq = hyperquest.put(href, {})
+
+    // http response
+    hq.once('response', function (res) {
+      t.equal(res.statusCode, 500, 'create 500 bad')
+      t.equal(res.headers['content-type'], 'application/json', 'type correct')
+    })
+
+    // response content
+    hq.pipe(concat({ encoding: 'string' }, function (body) {
+      var obj = JSON.parse(body)
+      t.ok(obj.error)
+      server.close()
+      t.end()
+    }))
+
+    // request
+    hq.end()
+  })
+})
+
 test('media: upload + get with thumbnail', function (t) {
   createServer(function (server, base, osm, media) {
     var fpath = encodeURIComponent('test/data/image.jpg')
