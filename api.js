@@ -279,6 +279,7 @@ Api.prototype.syncToTarget = function (req, res, m, params) {
   } else if (params.host && params.port) {
     progress = self.core.sync.syncToTarget(params, self.opts)
   } else return onerror(res, 'Requires filename or host and port')
+  if (!progress) return onerror(res, 'Target not found')
 
   function onprogress (data) {
     if (data === 'replication-started') send(res, 'replication-started')
