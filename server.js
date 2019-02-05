@@ -12,7 +12,7 @@ var ecstatic = require('ecstatic')
 var http = require('http')
 var server = http.createServer(function (req, res) {
   if (req.url === '/') {
-    return ecstatic({root:__dirname})(req, res)
+    return ecstatic({root: __dirname})(req, res)
   }
   if (!route.handle(req, res)) {
     res.statusCode = 404

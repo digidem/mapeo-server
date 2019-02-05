@@ -23,12 +23,14 @@ test('styles: list', function (t) {
           { id: 'sat-style',
             name: 'Satellite',
             bounds: [ -122.339973, 37.742214, -122.150116, 37.856694 ],
-            minzoom: 0, maxzoom: 22
+            minzoom: 0,
+            maxzoom: 22
           },
           { id: 'streets-sat-style',
             name: 'Mapbox Satellite Streets',
             bounds: [ -122.339973, 37.742214, -122.150116, 37.856694 ],
-            minzoom: 0, maxzoom: 16
+            minzoom: 0,
+            maxzoom: 16
           }
         ]
         t.deepEquals(obj, expected)

@@ -17,7 +17,7 @@ test('sync - announce and close', function (t) {
 
 test('sync - two-server announce and find eachother', function (t) {
   twoServers(function (a, b) {
-    a.router.api.sync.on('connection', function () {
+    a.router.api.core.sync.on('connection', function () {
       needle.get(a.base + '/sync/targets', function (err, resp, body) {
         t.error(err)
         t.equal(body.length, 1)

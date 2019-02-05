@@ -17,7 +17,7 @@ function createServer (opts, cb) {
     opts = { port: 5000 }
   }
   var osm = Osm()
-  var dir = '/tmp/test-mapeo-'+Math.random().toString().substring(3)
+  var dir = '/tmp/test-mapeo-' + Math.random().toString().substring(3)
   var media = blob(dir)
   var base = `http://localhost:${opts.port}`
 
