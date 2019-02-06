@@ -42,8 +42,8 @@ Api.prototype.observationDelete = function (req, res, m) {
   })
 }
 
-Api.prototype.observationList = function (req, res, m) {
-  this.core.observationList(function (err, results) {
+Api.prototype.observationList = function (req, res, m, q) {
+  this.core.observationList(q, function (err, results) {
     if (err) return handleError(res, errors(err))
     res.setHeader('content-type', 'application/json')
     res.end(JSON.stringify(results))
@@ -269,13 +269,13 @@ Api.prototype.getSyncTargets = function (req, res, m) {
   res.end(JSON.stringify(this.core.sync.targets()))
 }
 
-Api.prototype.syncToTarget = function (req, res, m, params) {
+Api.prototype.syncToTarget = function (req, res, m, q) {
   var self = this
   var progress
-  if (params.filename) {
-    progress = self.core.sync.replicateFromFile(params.filename, self.opts)
-  } else if (params.host && params.port) {
-    progress = self.core.sync.syncToTarget(params, self.opts)
+  if (q.filename) {
+    progress = self.core.sync.replicateFromFile(q.filename, self.opts)
+  } else if (q.host && q.port) {
+    progress = self.core.sync.syncToTarget(q, self.opts)
   } else return onerror(res, 'Requires filename or host and port')
   if (!progress) return onerror(res, 'Target not found')
 
