@@ -253,13 +253,15 @@ Api.prototype.stylesGet = function (req, res, m) {
 }
 
 Api.prototype.syncClose = function (req, res, m) {
-  this.core.sync.unannounce(function () {
+  console.log('closing')
+  this.core.sync.close(function () {
+    console.log('called back')
     res.end()
   })
 }
 
 Api.prototype.syncAnnounce = function (req, res, m) {
-  this.core.sync.announce(function () {
+  this.core.sync.listen(function () {
     res.end()
   })
 }
@@ -269,13 +271,13 @@ Api.prototype.getSyncTargets = function (req, res, m) {
   res.end(JSON.stringify(this.core.sync.targets()))
 }
 
-Api.prototype.syncToTarget = function (req, res, m, q) {
+Api.prototype.syncStart = function (req, res, m, q) {
   var self = this
   var progress
   if (q.filename) {
     progress = self.core.sync.replicateFromFile(q.filename, self.opts)
   } else if (q.host && q.port) {
-    progress = self.core.sync.syncToTarget(q, self.opts)
+    progress = self.core.sync.start(q, self.opts)
   } else return onerror(res, 'Requires filename or host and port')
   if (!progress) return onerror(res, 'Target not found')
 

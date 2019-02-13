@@ -117,7 +117,7 @@ test('media: upload + get with media mode: push', function (t) {
       t.equal(res.statusCode, 200, 'create 200 ok')
       t.equal(res.headers['content-type'], 'application/json', 'type correct')
     })
-    a.router.api.core.sync.on('connection', function () {
+    a.router.api.core.sync.on('target', function () {
       var targets = a.router.api.core.sync.targets()
       sync(targets[0])
     })
@@ -130,16 +130,22 @@ test('media: upload + get with media mode: push', function (t) {
     }))
 
     function sync (target) {
+      console.log('syncing', target)
       var href = a.base + `/sync/start?host=${target.host}&port=${target.port}`
       var hq = hyperquest.get(href, {})
       hq.once('response', function (res) {
         t.equal(res.statusCode, 200, 'sync 200 ok')
         res.on('end', check)
       })
+      hq.pipe(concat({ encoding: 'string' }, function (body) {
+        console.log(body)
+      }))
     }
 
     function done () {
+      console.log('unannouncing')
       unannounce(a, b, function (err) {
+        console.log('done')
         t.error(err)
         a.server.close()
         b.server.close()
@@ -208,8 +214,10 @@ test('media: upload + get with media mode: push<->pull', function (t) {
     }
 
     function done () {
+      console.log('almost done!')
       unannounce(a, b, function (err) {
         t.error(err)
+        console.log('done')
         a.server.close()
         b.server.close()
         t.end()
