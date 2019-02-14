@@ -130,7 +130,6 @@ test('media: upload + get with media mode: push', function (t) {
     }))
 
     function sync (target) {
-      console.log('syncing', target)
       var href = a.base + `/sync/start?host=${target.host}&port=${target.port}`
       var hq = hyperquest.get(href, {})
       hq.once('response', function (res) {
@@ -140,9 +139,7 @@ test('media: upload + get with media mode: push', function (t) {
     }
 
     function done () {
-      console.log('unannouncing')
       unannounce(a, b, function (err) {
-        console.log('done')
         t.error(err)
         a.server.close()
         b.server.close()
@@ -211,10 +208,8 @@ test('media: upload + get with media mode: push<->pull', function (t) {
     }
 
     function done () {
-      console.log('almost done!')
       unannounce(a, b, function (err) {
         t.error(err)
-        console.log('done')
         a.server.close()
         b.server.close()
         t.end()

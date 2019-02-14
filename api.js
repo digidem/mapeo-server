@@ -253,9 +253,7 @@ Api.prototype.stylesGet = function (req, res, m) {
 }
 
 Api.prototype.syncClose = function (req, res, m) {
-  console.log('closing')
   this.core.sync.close(function () {
-    console.log('called back')
     res.end()
   })
 }
@@ -268,7 +266,8 @@ Api.prototype.syncAnnounce = function (req, res, m) {
 
 Api.prototype.getSyncTargets = function (req, res, m) {
   res.setHeader('Content-Type', 'application/json')
-  res.end(JSON.stringify(this.core.sync.targets()))
+  var targets = this.core.sync.targets()
+  res.end(JSON.stringify(targets))
 }
 
 Api.prototype.syncStart = function (req, res, m, q) {
