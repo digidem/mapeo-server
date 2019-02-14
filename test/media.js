@@ -117,7 +117,7 @@ test('media: upload + get with media mode: push', function (t) {
       t.equal(res.statusCode, 200, 'create 200 ok')
       t.equal(res.headers['content-type'], 'application/json', 'type correct')
     })
-    a.router.api.core.sync.on('connection', function () {
+    a.router.api.core.sync.on('target', function () {
       var targets = a.router.api.core.sync.targets()
       sync(targets[0])
     })
@@ -189,7 +189,7 @@ test('media: upload + get with media mode: push<->pull', function (t) {
     hq.pipe(concat({ encoding: 'string' }, function (body) {
       obj = JSON.parse(body)
       t.ok(/^[0-9A-Fa-f]+.jpg$/.test(obj.id), 'expected media id response')
-      a.router.api.core.sync.on('connection', function () {
+      a.router.api.core.sync.on('target', function () {
         var targets = a.router.api.core.sync.targets()
         sync(targets[0])
       })

@@ -39,22 +39,16 @@ function createServer (opts, cb) {
 }
 
 function twoServers (opts, cb) {
-  var name1 = 'test1'
-  var name2 = 'test2'
   if (!cb) {
     cb = opts
     opts = { a: {}, b: {} }
   }
   createServer({
-    name: name1,
-    host: name1,
     port: 5000,
     media: opts.a.media
   }, function (server, base, osm, media, router) {
     const a = { server, base, osm, media, router }
     createServer({
-      name: name2,
-      host: name2,
       port: 5001,
       media: opts.b.media
     }, function (server2, base2, osm2, media2, router2) {

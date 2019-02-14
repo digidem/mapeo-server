@@ -32,7 +32,7 @@ module.exports = function (osm, media, opts) {
   router.addRoute('GET /styles/:id/*', api.stylesGetStatic.bind(api))
 
   // Sync
-  router.addRoute('GET /sync/start', api.syncToTarget.bind(api))
+  router.addRoute('GET /sync/start', api.syncStart.bind(api))
   router.addRoute('GET /sync/targets', api.getSyncTargets.bind(api))
   router.addRoute('GET /sync/announce', api.syncAnnounce.bind(api))
   router.addRoute('GET /sync/unannounce', api.syncClose.bind(api))
