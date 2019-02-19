@@ -12,7 +12,7 @@
     "type": "git",
     "url": "git+https://github.com/digidem/mapeo-server.git"
   },
-  "author": [
+  "authors": [
     "Karissa McKelvey",
     "Stephen Whitmore"
   ],
