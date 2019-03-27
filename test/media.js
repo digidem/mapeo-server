@@ -153,7 +153,7 @@ test('media: upload + get with media mode: push', function (t) {
         t.equals(buf1.toString('hex'), buf2.toString('hex'))
         a.media.createReadStream('thumbnail/' + obj.id).pipe(concat(function (buf3) {
           t.equals(buf1.toString('hex'), buf3.toString('hex'))
-          b.media.exists('original/' + obj.id, function (err, exists) {
+          b.media.exists('original/' + obj.id + '.jpg', function (err, exists) {
             t.error(err, 'no error')
             t.notOk(exists, 'media does not exist')
             done()
