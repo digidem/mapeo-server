@@ -267,6 +267,11 @@ Api.prototype.syncAnnounce = function (req, res, m) {
 Api.prototype.getSyncTargets = function (req, res, m) {
   res.setHeader('Content-Type', 'application/json')
   var targets = this.core.sync.targets()
+    .map(function (target) {
+      var res = Object.assign({}, target)
+      delete res.connection
+      return res
+    })
   res.end(JSON.stringify(targets))
 }
 

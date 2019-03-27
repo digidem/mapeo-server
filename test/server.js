@@ -4,6 +4,16 @@ var needle = require('needle')
 var http = require('http')
 var Router = require('..')
 
+var mkdirp = require('mkdirp')
+var path = require('path')
+var rimraf = require('rimraf')
+var osmdb = require('kappa-osm')
+var kappa = require('kappa-core')
+var raf = require('random-access-file')
+var level = require('level')
+var blobstore = require('safe-fs-blob-store')
+var tmp = require('tmp')
+
 module.exports = {
   announce,
   unannounce,
@@ -16,10 +26,20 @@ function createServer (opts, cb) {
     cb = opts
     opts = { port: 5000 }
   }
-  var osm = Osm()
-  var dir = '/tmp/test-mapeo-' + Math.random().toString().substring(3)
-  var media = blob(dir)
   var base = `http://localhost:${opts.port}`
+  var dir = tmp.dirSync().name
+
+  rimraf.sync(dir)
+  mkdirp.sync(dir)
+
+  var osm = osmdb({
+    core: kappa(dir, {valueEncoding: 'json'}),
+    index: level(path.join(dir, 'index')),
+    storage: function (name, cb) {
+      process.nextTick(cb, null, raf(path.join(dir, 'storage', name)))
+    }
+  })
+  var media = blobstore(path.join(dir, 'media'))
 
   var router = Router(osm, media, opts)
 
@@ -43,15 +63,15 @@ function twoServers (opts, cb) {
     cb = opts
     opts = { a: {}, b: {} }
   }
-  createServer({
+  createServer(Object.assign({
     port: 5000,
     media: opts.a.media
-  }, function (server, base, osm, media, router) {
+  }, opts.a.opts || {}), function (server, base, osm, media, router) {
     const a = { server, base, osm, media, router }
-    createServer({
+    createServer(Object.assign({
       port: 5001,
       media: opts.b.media
-    }, function (server2, base2, osm2, media2, router2) {
+    }, opts.b.opts || {}), function (server2, base2, osm2, media2, router2) {
       const b = {
         server: server2,
         base: base2,

@@ -391,10 +391,10 @@ test('observations: try to update with bad id', function (t) {
       lat: 5,
       lon: 6
     }
-    osm.create(obs, function (err, id, node) {
+    osm.create(obs, function (err, node) {
       t.error(err)
 
-      var href = `${base}/observations/${id}`
+      var href = `${base}/observations/${node.id}`
       var hq = hyperquest.put(href, {
         headers: { 'content-type': 'application/json' }
       })
@@ -403,7 +403,7 @@ test('observations: try to update with bad id', function (t) {
         type: 'observation',
         lat: 10,
         lon: 12,
-        version: node.key,
+        version: node.version,
         id: 'fake id'
       }
 
@@ -486,11 +486,12 @@ test('observations: convert schema 1 observations', function (t) {
     attachments: [ {id: 'c1816f964dfc19bf8f20a50ba873588e.jpg'} ]
   }
   createServer(function (server, base, osm, media) {
-    osm.create(oldObs, function (err, id, node) {
+    osm.create(oldObs, function (err, node) {
       t.error(err)
-      getJson(`${base}/observations/${id}`, function (theElms) {
+      getJson(`${base}/observations/${node.id}`, function (theElms) {
         delete theElms[0].version
         delete theElms[0].id
+        delete theElms[0].timestamp
         t.deepEqual(theElms[0], expected, 'observation converted correctly')
         server.close()
         t.end()
@@ -565,9 +566,9 @@ test('observations: convert schema 2 observations', function (t) {
   }
 
   createServer(function (server, base, osm, media) {
-    osm.create(oldObs, function (err, id, node) {
+    osm.create(oldObs, function (err, node) {
       t.error(err)
-      getJson(`${base}/observations/${id}`, function (theElms) {
+      getJson(`${base}/observations/${node.id}`, function (theElms) {
         delete theElms[0].version
         delete theElms[0].id
         t.deepEqual(theElms[0], expected, 'observation converted correctly')
@@ -586,16 +587,16 @@ test('observations: create + convert', function (t) {
       type: 'observation',
       timestamp: new Date().toISOString()
     }
-    osm.create(og, function (err, id, node) {
+    osm.create(og, function (err, node) {
       t.error(err)
 
       // convert to node
-      putJson(`${base}/observations/to-element/${id}`, function (elm) {
+      putJson(`${base}/observations/to-element/${node.id}`, function (elm) {
         t.error(elm.error)
         t.ok(elm.id)
 
         // look up observation again + check for element_id tag
-        getJson(`${base}/observations/${id}`, function (obses) {
+        getJson(`${base}/observations/${node.id}`, function (obses) {
           t.error(obses.error)
           t.equals(obses[0].tags.element_id, elm.id)
 
@@ -606,7 +607,7 @@ test('observations: create + convert', function (t) {
 
             // try to convert observation *again* and ensure the same id comes
             // back
-            putJson(`${base}/observations/to-element/${id}`, function (oldElm) {
+            putJson(`${base}/observations/to-element/${node.id}`, function (oldElm) {
               t.error(oldElm.error)
               t.equals(oldElm.id, elm.id)
 
@@ -635,7 +636,7 @@ function check (t, href, expected, done) {
   hq.pipe(concat({ encoding: 'string' }, function (body) {
     try {
       var objs = JSON.parse(body)
-      var sorter = (a, b) => Number(a.id) < Number(b.id)
+      var sorter = (a, b) => a.id < b.id
       t.deepEquals(objs.sort(sorter), expected.sort(sorter), 'observation from server matches expected')
     } catch (e) {
       t.error(e, 'json parsing exception!')
@@ -686,15 +687,16 @@ function delJson (href, cb) {
 
 function testUpdateObservation (t, orig, update, expected, cb) {
   createServer(function (server, base, osm, media) {
-    osm.create(orig, function (err, id, node) {
+    osm.create(orig, function (err, node) {
       t.error(err)
+      var id = node.id
 
       var href = `${base}/observations/${id}`
       var hq = hyperquest.put(href, {
         headers: { 'content-type': 'application/json' }
       })
 
-      update.version = node.key
+      update.version = node.version
       update.id = id
 
       hq.on('response', function (res) {
