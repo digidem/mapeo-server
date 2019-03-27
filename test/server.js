@@ -63,15 +63,15 @@ function twoServers (opts, cb) {
     cb = opts
     opts = { a: {}, b: {} }
   }
-  createServer({
+  createServer(Object.assign({
     port: 5000,
     media: opts.a.media
-  }, function (server, base, osm, media, router) {
+  }, opts.a.opts || {}), function (server, base, osm, media, router) {
     const a = { server, base, osm, media, router }
-    createServer({
+    createServer(Object.assign({
       port: 5001,
       media: opts.b.media
-    }, function (server2, base2, osm2, media2, router2) {
+    }, opts.b.opts || {}), function (server2, base2, osm2, media2, router2) {
       const b = {
         server: server2,
         base: base2,

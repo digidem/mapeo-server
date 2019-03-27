@@ -101,10 +101,10 @@ test('media: upload + get with thumbnail', function (t) {
   })
 })
 
-test('media: upload + get with media mode: push', function (t) {
+test('media: upload + get with media mode: mobile', function (t) {
   twoServers({
-    a: { media: {mode: 'push'} },
-    b: { media: {mode: 'push'} }
+    a: { opts: { deviceType: 'mobile' } },
+    b: { opts: { deviceType: 'mobile' } }
   }, function (a, b) {
     var fpath = encodeURIComponent('test/data/image.jpg')
     var href = a.base + '/media?file=' + fpath + '&thumbnail=' + fpath
@@ -153,7 +153,7 @@ test('media: upload + get with media mode: push', function (t) {
         t.equals(buf1.toString('hex'), buf2.toString('hex'))
         a.media.createReadStream('thumbnail/' + obj.id).pipe(concat(function (buf3) {
           t.equals(buf1.toString('hex'), buf3.toString('hex'))
-          b.media.exists('original/' + obj.id + '.jpg', function (err, exists) {
+          b.media.exists('original/' + obj.id, function (err, exists) {
             t.error(err, 'no error')
             t.notOk(exists, 'media does not exist')
             done()
@@ -167,10 +167,10 @@ test('media: upload + get with media mode: push', function (t) {
   })
 })
 
-test('media: upload + get with media mode: push<->pull', function (t) {
+test('media: upload + get with media mode: mobile<->desktop', function (t) {
   twoServers({
-    a: { media: {mode: 'push'} },
-    b: { media: {mode: 'pull'} }
+    a: { opts: { deviceType: 'mobile' } },
+    b: { opts: { deviceType: 'desktop' } }
   }, function (a, b) {
     var fpath = encodeURIComponent('test/data/image.jpg')
     var href = a.base + '/media?file=' + fpath + '&thumbnail=' + fpath
