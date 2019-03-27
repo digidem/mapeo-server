@@ -17,7 +17,7 @@ $ npm install mapeo-server
 
 Creates a mapeo http server.
 
-`osm` is an [osm-p2p-db][osm-p2p-db] instance, like [osm-p2p][osm-p2p] or [osm-p2p-mem][osm-p2p-mem].
+`osm` is a [kappa-osm][kappa-osm] instance.
 
 `media` is an instance of [abstract-blob-store][abstract-blob-store]. In order to do sync correctly, it must be patched with a `list(cb)` method, or you can use a blob store that already supports this, like [safe-fs-blob-store][safe-fs-blob-store].
 
@@ -105,8 +105,9 @@ Fetch a static file belonging to a preset with id `id`.
 
 #### `PUT /media?file=PATH&thumbnail=PATH`
 
-Save a piece of media (photos only), identified by the absolute file path `PATH`
-to the database. `PATH` should be URL encoded.
+Save a piece of media (photos only) to the database, identified by the absolute
+file path `PATH` on the same machine as the server. `PATH` must be URL
+encoded.
 
 Optionally, a thumbnail file path may also be included.
 
@@ -254,9 +255,7 @@ app.use('/api', Router(dir))
 
 Relies on `fs` for media copying right now: this is a bug.
 
-[osm-p2p-db]: https://github.com/digidem/osm-p2p-db
-[osm-p2p]: https://github.com/digidem/osm-p2p
-[osm-p2p-mem]: https://github.com/digidem/osm-p2p-mem
+[kappa-osm]: https://github.com/digidem/kappa-osm
 [abstact-blob-store]: https://github.com/maxogden/abstract-blob-store
 [safe-fs-blob-store]: https://github.com/noffle/safe-fs-blob-store
 
