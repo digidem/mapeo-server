@@ -6,7 +6,7 @@ var through = require('through2')
 var {createServer} = require('./server')
 
 test('file sync - create syncfile', function (t) {
-  var filename = tmp.fileSync()
+  var filename = tmp.fileSync().name
   createServer(function (server, base) {
     function done (err) {
       t.error(err)
