@@ -483,7 +483,8 @@ test('observations: convert schema 1 observations', function (t) {
     lat: 53.42769424,
     lon: -2.24193244,
     created_at: '2018-10-03T14:28:17.529Z',
-    attachments: [ {id: 'c1816f964dfc19bf8f20a50ba873588e.jpg'} ]
+    attachments: [ {id: 'c1816f964dfc19bf8f20a50ba873588e.jpg'} ],
+    links: []
   }
   createServer(function (server, base, osm, media) {
     osm.create(oldObs, function (err, node) {
@@ -562,7 +563,7 @@ test('observations: convert schema 2 observations', function (t) {
       }
     ],
     type: 'observation',
-    timestamp: '2018-10-05T10:44:57.420Z'
+    links: []
   }
 
   createServer(function (server, base, osm, media) {
@@ -571,6 +572,7 @@ test('observations: convert schema 2 observations', function (t) {
       getJson(`${base}/observations/${node.id}`, function (theElms) {
         delete theElms[0].version
         delete theElms[0].id
+        delete theElms[0].timestamp
         t.deepEqual(theElms[0], expected, 'observation converted correctly')
         server.close()
         t.end()
@@ -637,6 +639,8 @@ function check (t, href, expected, done) {
     try {
       var objs = JSON.parse(body)
       var sorter = (a, b) => a.id < b.id
+      objs.forEach(obj => delete obj.timestamp)
+      expected.forEach(obj => delete obj.timestamp)
       t.deepEquals(objs.sort(sorter), expected.sort(sorter), 'observation from server matches expected')
     } catch (e) {
       t.error(e, 'json parsing exception!')
@@ -698,6 +702,7 @@ function testUpdateObservation (t, orig, update, expected, cb) {
 
       update.version = node.version
       update.id = id
+      expected.links = [node.version]
 
       hq.on('response', function (res) {
         t.equal(res.statusCode, 200, 'create 200 ok')
