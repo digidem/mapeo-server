@@ -277,26 +277,28 @@ Api.prototype.getSyncTargets = function (req, res, m) {
 
 Api.prototype.syncStart = function (req, res, m, q) {
   var self = this
-  var progress
+  var events
   if (q.filename) {
-    progress = self.core.sync.replicateFromFile(q.filename, self.opts)
+    events = self.core.sync.replicateFromFile(q.filename, self.opts)
   } else if (q.host && q.port) {
-    progress = self.core.sync.start(q, self.opts)
+    events = self.core.sync.start(q, self.opts)
   } else return onerror(res, 'Requires filename or host and port')
-  if (!progress) return onerror(res, 'Target not found')
+  if (!events) return onerror(res, 'Target not found')
 
-  function onprogress (data) {
-    if (data === 'replication-started') send(res, 'replication-started')
-    else send(res, 'replication-progress', data)
+  events.on('progress', onprogress)
+  events.on('error', onend)
+  events.on('end', onend)
+
+  send(res, 'replication-started')
+
+  function onprogress (progress) {
+    send(res, 'replication-progress', progress)
   }
-  progress.on('progress', onprogress)
-  progress.on('error', onend)
-  progress.on('end', onend)
 
   function onend (err) {
     if (err) return onerror(res, err.message)
     send(res, 'replication-complete')
-    progress.removeListener('progress', onprogress)
+    events.removeListener('progress', onprogress)
     res.end()
   }
 

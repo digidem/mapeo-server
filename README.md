@@ -190,14 +190,16 @@ Start syncing and listen to progress events. Events are returned as a newline-de
 Events are returned with a `topic` and `message` key:
 
 ```js
+{"topic": "replication-started" }
+{"topic": "replication-progress", {"db": { "sofar": 5, "total": 10 }, "media": { "sofar": 12, "total": 95 } } }
 {"topic": "replication-error", "message": "Some error message here"}
-```
+{"topic": "replication-complete" }
 
 Valid event topics:
 
   * `replication-error`: Sent once there is error, and the stream is closed.
   * `replication-started`: Sent once to indicate replication has started, but no data has been sent.
-  * `replication-progress`: Sent for each block of data sent.
+  * `replication-progress`: Sent for each datum (map element, photo) sent.
   * `replication-complete`: Sent once for a replication success, and the stream is closed.
 
 Example client code for `/sync/start`
@@ -209,7 +211,7 @@ var hq = hyperquest(url)
 var stream = pump(hq, split2())
 stream.on('data', function (data) {
   var row = JSON.parse(data)
-  if (row.topic === 'replication-progress') console.log('progress...')
+  if (row.topic === 'replication-progress') console.log('progress...', row.message)
   if (row.topic === 'replication-error') console.log('error', row.message)
   if (row.topic === 'replication-complete') console.log('done')
 })
