@@ -221,11 +221,20 @@ stream.on('data', function (data) {
 ## Usage
 
 ```js
-var Osm = require('osm-p2p')
-var blobstore = require('fs-blob-store')
+var osmdb = require('kappa-osm')
+var kappa = require('kappa-core')
+var raf = require('random-access-file')
+var level = require('level')
+var blobstore = require('safe-fs-blob-store')
 var Router = require('mapeo-server')
 
-var osm = Osm('./db')
+var osm = osmdb({
+  core: kappa('./db', {valueEncoding: 'json'}),
+  index: level('./index')),
+  storage: function (name, cb) {
+    process.nextTick(cb, null, raf(path.join(dir, 'storage', name)))
+  }
+})
 var media = blobstore('./media')
 
 var root = '/path/to/my/static/files' // optional

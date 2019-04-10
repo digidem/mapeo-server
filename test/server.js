@@ -1,4 +1,3 @@
-var Osm = require('osm-p2p-mem')
 var blob = require('safe-fs-blob-store')
 var needle = require('needle')
 var http = require('http')
