@@ -22,7 +22,7 @@
   },
   "homepage": "https://github.com/digidem/mapeo-server#readme",
   "dependencies": {
-    "@mapeo/core": "^4.1.1",
+    "@mapeo/core": "^4.2.0",
     "asar": "^0.14.3",
     "body": "^5.1.0",
     "debug": "^4.1.0",

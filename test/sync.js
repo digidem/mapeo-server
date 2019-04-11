@@ -24,7 +24,7 @@ test('sync - announce and close', function (t) {
   })
 })
 
-test.only('sync - two-server listen and dont find eachother', function (t) {
+test('sync - two-server listen and dont find eachother', function (t) {
   twoServers(function (a, b) {
     listen(a, b, function (err) {
       t.error(err)
@@ -69,11 +69,14 @@ test('sync - two-server listen and join and find eachother', function (t) {
         } catch (err) {
           t.fail('JSON parse failed: ' + data.toString())
         }
-        t.equal(body.length, 1)
-        var entry = body[0]
+        t.equal(body.message.length, 1)
+        var entry = body.message[0]
         t.equal(entry.type, 'wifi')
         next()
       }))
+      setTimeout(function () {
+        hq.destroy()
+      }, 250)
       hq.on('error', function (err) { t.error(err) })
       hq.on('end', function () {
         destroy(a, b, function (err) {
@@ -106,8 +109,9 @@ test('sync - two-server sync', function (t) {
     a.router.api.core.sync.on('peer', function () {
       needle.get(a.base + '/sync/peers', function (err, resp, body) {
         t.error(err)
-        t.equal(body.length, 1)
-        var entry = body[0]
+        t.equal(body.topic, 'peers')
+        var entry = body.message[0]
+        t.equal(body.message.length, 1)
         t.equal(entry.type, 'wifi')
         t.equal(entry.name, 'peer2')
         var href = a.base + `/sync/start?host=${entry.host}&port=${entry.port}`

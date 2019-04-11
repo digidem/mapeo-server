@@ -275,25 +275,33 @@ Api.prototype.syncListen = function (req, res, m) {
   })
 }
 
-Api.prototype.syncPeers = function (req, res, m, q) {
-  res.setHeader('Content-Type', 'application/json')
-  var peers = this.core.sync.peers()
+Api.prototype._peers = function () {
+  return this.core.sync.peers()
     .map(function (peer) {
       var res = Object.assign({}, peer)
       delete res.connection
       return res
     })
+}
+
+Api.prototype.syncPeers = function (req, res, m, q) {
+  var self = this
+  res.setHeader('Content-Type', 'application/json')
+  if (!q.interval) {
+    send(res, 'peers', self._peers())
+    return res.end()
+  }
 
   var closed = false
-
   var interval = setInterval(function () {
     if (closed) return
-    send(res, 'peers', peers)
-  }, q.interval || 3000)
+    send(res, 'peers', self._peers())
+  }, q.interval)
 
+  res.on('error', done)
   res.on('close', done)
 
-  function done (err) {
+  function done () {
     clearInterval(interval)
     closed = true
     res.end()

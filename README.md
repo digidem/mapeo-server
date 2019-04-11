@@ -181,7 +181,13 @@ Destroy the current sync server and close all open connections. Returns 200 OK o
 
 #### `GET /sync/peers`
 
-Returns list of available sync peers every set interval. Right now, only lists other services broadcasting on the local network through mdns using the 'mapeo-sync' key.
+
+Options
+
+  * `interval`: Default false. If set, will send an updated list of the peers at the
+    given interval using streaming GET request.
+
+Returns list of available sync peers every set interval. Only lists other devices broadcasting using the 'mapeo-sync' key.
 
 Each sync target is an object with `ip`, `port`, `host`, and `name` if device
 name is set.
@@ -194,11 +200,6 @@ GET /sync/peers?interval=300
 { topic: 'peers', message: [{ip: 127.0.0.1, port: 1337, host: 'hostname', name: "Karissa's Device"}]}
 
 ```
-
-Options
-
-  * `interval`: Default 3000ms. Will send an updated list of the peers at the
-    given interval.
 
 #### `GET /sync/start`
 
