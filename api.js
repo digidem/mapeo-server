@@ -258,7 +258,8 @@ Api.prototype.syncClose = function (req, res, m) {
   })
 }
 
-Api.prototype.syncAnnounce = function (req, res, m) {
+Api.prototype.syncAnnounce = function (req, res, m, q) {
+  if (q.name) this.core.sync.setName(q.name)
   this.core.sync.listen(function () {
     res.end()
   })

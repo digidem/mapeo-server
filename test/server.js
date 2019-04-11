@@ -84,9 +84,11 @@ function twoServers (opts, cb) {
 }
 
 function announce (a, b, cb) {
-  needle.get(a.base + '/sync/announce', function (err, resp, body) {
+  var nameA = a._name || 'unknown'
+  var nameB = b._name || 'unknown'
+  needle.get(a.base + '/sync/announce?name='+nameA, function (err, resp, body) {
     if (err) return cb(err)
-    needle.get(b.base + '/sync/announce', function (err, resp, body) {
+    needle.get(b.base + '/sync/announce?name='+nameB, function (err, resp, body) {
       if (err) return cb(err)
       return cb()
     })
