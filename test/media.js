@@ -1,6 +1,6 @@
 var test = require('tape')
 var hyperquest = require('hyperquest')
-var {announce, unannounce, createServer, twoServers} = require('./server')
+var {listen, join, destroy, createServer, twoServers} = require('./server')
 var concat = require('concat-stream')
 var fs = require('fs')
 
@@ -117,20 +117,25 @@ test('media: upload + get with media mode: mobile', function (t) {
       t.equal(res.statusCode, 200, 'create 200 ok')
       t.equal(res.headers['content-type'], 'application/json', 'type correct')
     })
-    a.router.api.core.sync.on('target', function () {
-      var targets = a.router.api.core.sync.targets()
-      sync(targets[0])
+    a.router.api.core.sync.on('peer', function () {
+      var peers = a.router.api.core.sync.peers()
+      sync(peers[0])
     })
 
     // response content
     hq.pipe(concat({ encoding: 'string' }, function (body) {
       obj = JSON.parse(body)
       t.ok(/^[0-9A-Fa-f]+.jpg$/.test(obj.id), 'expected media id response')
-      announce(a, b, function (err) { t.error(err) })
+      listen(a, b, function (err) {
+        t.error(err)
+        join(a, b, function (err) {
+          t.error(err)
+        })
+      })
     }))
 
-    function sync (target) {
-      var href = a.base + `/sync/start?host=${target.host}&port=${target.port}`
+    function sync (peer) {
+      var href = a.base + `/sync/start?host=${peer.host}&port=${peer.port}`
       var hq = hyperquest.get(href, {})
       hq.once('response', function (res) {
         t.equal(res.statusCode, 200, 'sync 200 ok')
@@ -139,7 +144,7 @@ test('media: upload + get with media mode: mobile', function (t) {
     }
 
     function done () {
-      unannounce(a, b, function (err) {
+      destroy(a, b, function (err) {
         t.error(err)
         a.server.close()
         b.server.close()
@@ -174,7 +179,12 @@ test('media: upload + get with media mode: mobile<->desktop', function (t) {
   }, function (a, b) {
     var fpath = encodeURIComponent('test/data/image.jpg')
     var href = a.base + '/media?file=' + fpath + '&thumbnail=' + fpath
-    announce(a, b, function (err) { t.error(err) })
+    listen(a, b, function (err) {
+      t.error(err)
+      join(a, b, function (err) {
+        t.error(err)
+      })
+    })
 
     var hq = hyperquest.put(href, {})
     var obj
@@ -189,17 +199,17 @@ test('media: upload + get with media mode: mobile<->desktop', function (t) {
     hq.pipe(concat({ encoding: 'string' }, function (body) {
       obj = JSON.parse(body)
       t.ok(/^[0-9A-Fa-f]+.jpg$/.test(obj.id), 'expected media id response')
-      a.router.api.core.sync.on('target', function () {
-        var targets = a.router.api.core.sync.targets()
-        sync(targets[0])
+      a.router.api.core.sync.on('peer', function () {
+        var peers = a.router.api.core.sync.peers()
+        sync(peers[0])
       })
     }))
 
     // request
     hq.end()
 
-    function sync (target) {
-      var href = a.base + `/sync/start?host=${target.host}&port=${target.port}`
+    function sync (peer) {
+      var href = a.base + `/sync/start?host=${peer.host}&port=${peer.port}`
       var hq = hyperquest.get(href, {})
       hq.once('response', function (res) {
         t.equal(res.statusCode, 200, 'sync 200 ok')
@@ -208,7 +218,7 @@ test('media: upload + get with media mode: mobile<->desktop', function (t) {
     }
 
     function done () {
-      unannounce(a, b, function (err) {
+      destroy(a, b, function (err) {
         t.error(err)
         a.server.close()
         b.server.close()

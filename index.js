@@ -33,9 +33,11 @@ module.exports = function (osm, media, opts) {
 
   // Sync
   router.addRoute('GET /sync/start', api.syncStart.bind(api))
-  router.addRoute('GET /sync/targets', api.getSyncTargets.bind(api))
-  router.addRoute('GET /sync/announce', api.syncAnnounce.bind(api))
-  router.addRoute('GET /sync/unannounce', api.syncClose.bind(api))
+  router.addRoute('GET /sync/peers', api.syncPeers.bind(api))
+  router.addRoute('GET /sync/listen', api.syncListen.bind(api))
+  router.addRoute('GET /sync/destroy', api.syncDestroy.bind(api))
+  router.addRoute('GET /sync/join', api.syncJoin.bind(api))
+  router.addRoute('GET /sync/leave', api.syncLeave.bind(api))
 
   return {
     api,

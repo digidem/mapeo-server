@@ -1,4 +1,3 @@
-var blob = require('safe-fs-blob-store')
 var needle = require('needle')
 var http = require('http')
 var Router = require('..')
@@ -14,10 +13,12 @@ var blobstore = require('safe-fs-blob-store')
 var tmp = require('tmp')
 
 module.exports = {
-  announce,
-  unannounce,
-  createServer,
-  twoServers
+  join,
+  leave,
+  destroy,
+  listen,
+  twoServers,
+  createServer
 }
 
 function createServer (opts, cb) {
@@ -83,22 +84,42 @@ function twoServers (opts, cb) {
   })
 }
 
-function announce (a, b, cb) {
-  var nameA = a._name || 'unknown'
-  var nameB = b._name || 'unknown'
-  needle.get(a.base + '/sync/announce?name='+nameA, function (err, resp, body) {
+function listen (a, b, cb) {
+  needle.get(a.base + '/sync/listen', function (err, resp, body) {
     if (err) return cb(err)
-    needle.get(b.base + '/sync/announce?name='+nameB, function (err, resp, body) {
+    needle.get(b.base + '/sync/listen', function (err, resp, body) {
       if (err) return cb(err)
       return cb()
     })
   })
 }
 
-function unannounce (a, b, cb) {
-  needle.get(a.base + '/sync/unannounce', function (err, resp, body) {
+function destroy (a, b, cb) {
+  needle.get(a.base + '/sync/destroy', function (err, resp, body) {
     if (err) return cb(err)
-    needle.get(b.base + '/sync/unannounce', function (err, resp, body) {
+    needle.get(b.base + '/sync/destroy', function (err, resp, body) {
+      if (err) return cb(err)
+      return cb()
+    })
+  })
+}
+
+function join (a, b, cb) {
+  var nameA = a._name || 'unknown'
+  var nameB = b._name || 'unknown'
+  needle.get(a.base + '/sync/join?name=' + nameA, function (err, resp, body) {
+    if (err) return cb(err)
+    needle.get(b.base + '/sync/join?name=' + nameB, function (err, resp, body) {
+      if (err) return cb(err)
+      return cb()
+    })
+  })
+}
+
+function leave (a, b, cb) {
+  needle.get(a.base + '/sync/leave', function (err, resp, body) {
+    if (err) return cb(err)
+    needle.get(b.base + '/sync/leave', function (err, resp, body) {
       if (err) return cb(err)
       return cb()
     })

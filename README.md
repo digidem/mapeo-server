@@ -160,26 +160,35 @@ Fetch a single vector tile from the tileset `id` by an `x`,`y`,`z` coordinate.
 
 ### Sync
 
-#### `GET /sync/announce?name=name`
+#### `GET /sync/listen`
 
-Announce (or reannounce) the current server as a valid sync target.
+Begin the sync server for listening for connections.  Returns 200 OK once server is up and running.
+
+#### `GET /sync/join`
+
+Join the network and become discoverable by other peers.
 
 Optionally, a name for this peer can be provided, to appear in others
 `/sync/targets` list.
 
-Returns 200 OK once broadcasting has begun.
+#### `GET /sync/leave`
 
-#### `GET /sync/unannounce`
+Leave the network and no longer be discoverable.
 
-Stop announcing (advertising) the current server as a sync target.
+#### `GET /sync/destroy`
 
-Returns 200 OK once broadcasting has terminated.
+Destroy the current sync server and close all open connections. Returns 200 OK once connections have terminated.
 
-#### `GET /sync/targets`
+#### `GET /sync/peers`
 
-Returns list of available sync targets. Right now, only lists other services broadcasting on the local network through mdns using the 'mapeo-sync' key.
+Returns list of available sync peers every set interval. Right now, only lists other services broadcasting on the local network through mdns using the 'mapeo-sync' key.
 
 Each sync target is an object with `ip`, `port`, and `host`.
+
+Options
+
+  * `interval`: Default 3000ms. Will send an updated list of the peers at the
+    given interval.
 
 #### `GET /sync/start`
 
