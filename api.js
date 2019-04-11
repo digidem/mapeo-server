@@ -288,13 +288,16 @@ Api.prototype.syncPeers = function (req, res, m, q) {
 
   var interval = setInterval(function () {
     if (closed) return
-    send(res, JSON.stringify(peers))
+    send(res, 'peers', peers)
   }, q.interval || 3000)
 
-  res.on('close', function () {
+  res.on('close', done)
+
+  function done (err) {
     clearInterval(interval)
     closed = true
-  })
+    res.end()
+  }
 }
 
 Api.prototype.syncStart = function (req, res, m, q) {
@@ -335,8 +338,8 @@ Api.prototype.close = function (cb) {
   this.core.sync.close(cb)
 }
 
-function send (res, topic, msg) {
-  var str = JSON.stringify({ topic: topic, message: msg }) + '\n'
+function send (res, topic, message) {
+  var str = JSON.stringify({ topic, message }) + '\n'
   res.write(str)
 }
 

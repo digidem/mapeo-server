@@ -183,7 +183,17 @@ Destroy the current sync server and close all open connections. Returns 200 OK o
 
 Returns list of available sync peers every set interval. Right now, only lists other services broadcasting on the local network through mdns using the 'mapeo-sync' key.
 
-Each sync target is an object with `ip`, `port`, and `host`.
+Each sync target is an object with `ip`, `port`, `host`, and `name` if device
+name is set.
+
+```js
+GET /sync/peers?interval=300
+
+// then every 300ms...
+{ topic: 'peers', message: [{ip: 127.0.0.1, port: 1337, host: 'hostname', name: "Karissa's Device"}]}
+{ topic: 'peers', message: [{ip: 127.0.0.1, port: 1337, host: 'hostname', name: "Karissa's Device"}]}
+
+```
 
 Options
 

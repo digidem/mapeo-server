@@ -24,13 +24,28 @@ test('sync - announce and close', function (t) {
   })
 })
 
-test('sync - two-server listen and dont find eachother', function (t) {
+test.only('sync - two-server listen and dont find eachother', function (t) {
   twoServers(function (a, b) {
-    setTimeout(function () {
-      // wait three seconds, no peers
-      needle.get(a.base + '/sync/peers', function (err, resp, body) {
+    listen(a, b, function (err) {
+      t.error(err)
+      var href = a.base + `/sync/peers?interval=100`
+      var r = hyperquest(href, {end: false})
+      var times = 0
+      r.pipe(through.obj(function (data, enc, next) {
+        var body = JSON.parse(data)
+        t.equal(body.topic, 'peers')
+        t.equal(body.message.length, 0)
+        times += 1
+        next()
+      }))
+      setTimeout(function () {
+        r.destroy()
+      }, 250)
+      r.on('error', function (err) {
         t.error(err)
-        t.equal(body.length, 0)
+      })
+      r.on('end', function () {
+        t.same(times, 2)
         destroy(a, b, function (err) {
           t.error(err)
           a.server.close()
@@ -38,9 +53,6 @@ test('sync - two-server listen and dont find eachother', function (t) {
           t.end()
         })
       })
-    }, 3000)
-    listen(a, b, function (err) {
-      t.error(err)
     })
   })
 })
@@ -48,11 +60,22 @@ test('sync - two-server listen and dont find eachother', function (t) {
 test('sync - two-server listen and join and find eachother', function (t) {
   twoServers(function (a, b) {
     a.router.api.core.sync.on('peer', function () {
-      needle.get(a.base + '/sync/peers', function (err, resp, body) {
-        t.error(err)
+      var href = a.base + `/sync/peers`
+      var hq = hyperquest(href, {end: false})
+      hq.pipe(through.obj(function (data, enc, next) {
+        var body
+        try {
+          body = JSON.parse(data.toString())
+        } catch (err) {
+          t.fail('JSON parse failed: ' + data.toString())
+        }
         t.equal(body.length, 1)
         var entry = body[0]
         t.equal(entry.type, 'wifi')
+        next()
+      }))
+      hq.on('error', function (err) { t.error(err) })
+      hq.on('end', function () {
         destroy(a, b, function (err) {
           t.error(err)
           a.server.close()
