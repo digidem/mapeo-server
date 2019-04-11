@@ -55,6 +55,7 @@ test('sync - two-server sync', function (t) {
         t.equal(body.length, 1)
         var entry = body[0]
         t.equal(entry.type, 'wifi')
+        t.equal(entry.name, 'peer2')
         var href = a.base + `/sync/start?host=${entry.host}&port=${entry.port}`
         var hq = hyperquest(href, {end: false})
         hq.pipe(through.obj(function (data, enc, next) {
@@ -72,6 +73,8 @@ test('sync - two-server sync', function (t) {
         })
       })
     })
+    a._name = 'peer1'
+    b._name = 'peer2'
     announce(a, b, function (err) {
       t.error(err)
     })

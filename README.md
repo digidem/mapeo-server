@@ -160,9 +160,12 @@ Fetch a single vector tile from the tileset `id` by an `x`,`y`,`z` coordinate.
 
 ### Sync
 
-#### `GET /sync/announce`
+#### `GET /sync/announce?name=name`
 
 Announce (or reannounce) the current server as a valid sync target.
+
+Optionally, a name for this peer can be provided, to appear in others
+`/sync/targets` list.
 
 Returns 200 OK once broadcasting has begun.
 
