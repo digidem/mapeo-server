@@ -160,23 +160,46 @@ Fetch a single vector tile from the tileset `id` by an `x`,`y`,`z` coordinate.
 
 ### Sync
 
-#### `GET /sync/announce`
+#### `GET /sync/listen`
 
-Announce (or reannounce) the current server as a valid sync target.
+Begin the sync server for listening for connections.  Returns 200 OK once server is up and running.
 
-Returns 200 OK once broadcasting has begun.
+#### `GET /sync/join`
 
-#### `GET /sync/unannounce`
+Join the network and become discoverable by other peers.
 
-Stop announcing (advertising) the current server as a sync target.
+Optionally, a name for this peer can be provided, to appear in others
+`/sync/targets` list.
 
-Returns 200 OK once broadcasting has terminated.
+#### `GET /sync/leave`
 
-#### `GET /sync/targets`
+Leave the network and no longer be discoverable.
 
-Returns list of available sync targets. Right now, only lists other services broadcasting on the local network through mdns using the 'mapeo-sync' key.
+#### `GET /sync/destroy`
 
-Each sync target is an object with `ip`, `port`, and `host`.
+Destroy the current sync server and close all open connections. Returns 200 OK once connections have terminated.
+
+#### `GET /sync/peers`
+
+
+Options
+
+  * `interval`: Default false. If set, will send an updated list of the peers at the
+    given interval using streaming GET request.
+
+Returns list of available sync peers every set interval. Only lists other devices broadcasting using the 'mapeo-sync' key.
+
+Each sync target is an object with `ip`, `port`, `host`, and `name` if device
+name is set.
+
+```js
+GET /sync/peers?interval=300
+
+// then every 300ms...
+{ topic: 'peers', message: [{ip: '127.0.0.1', port: 1337, host: 'hostname', name: "Karissa's Device"}]}
+{ topic: 'peers', message: [{ip: '127.0.0.1', port: 1337, host: 'hostname', name: "Karissa's Device"}]}
+
+```
 
 #### `GET /sync/start`
 

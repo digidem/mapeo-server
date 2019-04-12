@@ -252,27 +252,60 @@ Api.prototype.stylesGet = function (req, res, m) {
   }
 }
 
-Api.prototype.syncClose = function (req, res, m) {
+Api.prototype.syncDestroy = function (req, res, m) {
   this.core.sync.close(function () {
     res.end()
   })
 }
 
-Api.prototype.syncAnnounce = function (req, res, m) {
+Api.prototype.syncJoin = function (req, res, m, q) {
+  if (q.name) this.core.sync.setName(q.name)
+  this.core.sync.join()
+  res.end()
+}
+
+Api.prototype.syncLeave = function (req, res, m) {
+  this.core.sync.leave()
+  res.end()
+}
+
+Api.prototype.syncListen = function (req, res, m) {
   this.core.sync.listen(function () {
     res.end()
   })
 }
 
-Api.prototype.getSyncTargets = function (req, res, m) {
-  res.setHeader('Content-Type', 'application/json')
-  var targets = this.core.sync.targets()
-    .map(function (target) {
-      var res = Object.assign({}, target)
+Api.prototype._peers = function () {
+  return this.core.sync.peers()
+    .map(function (peer) {
+      var res = Object.assign({}, peer)
       delete res.connection
       return res
     })
-  res.end(JSON.stringify(targets))
+}
+
+Api.prototype.syncPeers = function (req, res, m, q) {
+  var self = this
+  res.setHeader('Content-Type', 'application/json')
+  if (!q.interval) {
+    send(res, 'peers', self._peers())
+    return res.end()
+  }
+
+  var closed = false
+  var interval = setInterval(function () {
+    if (closed) return
+    send(res, 'peers', self._peers())
+  }, q.interval)
+
+  res.on('error', done)
+  res.on('close', done)
+
+  function done () {
+    clearInterval(interval)
+    closed = true
+    res.end()
+  }
 }
 
 Api.prototype.syncStart = function (req, res, m, q) {
@@ -313,8 +346,8 @@ Api.prototype.close = function (cb) {
   this.core.sync.close(cb)
 }
 
-function send (res, topic, msg) {
-  var str = JSON.stringify({ topic: topic, message: msg }) + '\n'
+function send (res, topic, message) {
+  var str = JSON.stringify({ topic, message }) + '\n'
   res.write(str)
 }
 
