@@ -196,7 +196,7 @@ name is set.
 GET /sync/peers?interval=300
 
 // then every 300ms...
-{ topic: 'peers', message: [{ip: 127.0.0.1, port: 1337, host: 'hostname', name: "Karissa's Device"}]}
+{ topic: 'peers', message: [{ip: '127.0.0.1', port: 1337, host: 'hostname', name: "Karissa's Device"}]}
 { topic: 'peers', message: [{ip: 127.0.0.1, port: 1337, host: 'hostname', name: "Karissa's Device"}]}
 
 ```
