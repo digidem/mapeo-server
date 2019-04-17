@@ -112,6 +112,7 @@ Api.prototype.presetsList = function (req, res, m) {
 
 Api.prototype.presetsGet = function (req, res, m) {
   ecstatic({
+    cache: 0,
     root: this.staticRoot,
     handleError: false
   })(req, res)
@@ -223,6 +224,7 @@ Api.prototype.stylesGetStyle = function (req, res, m) {
 
 Api.prototype.stylesGetStatic = function (req, res, m) {
   ecstatic({
+    cache: 0,
     root: this.staticRoot,
     handleError: false
   })(req, res)
