@@ -17,8 +17,14 @@ function Api (osm, media, opts) {
     id: 'MapeoDesktop_' + randombytes(8).toString('hex'),
     staticRoot: '.'
   }
+
   this.opts = Object.assign(defaultOpts, opts)
   this.staticRoot = this.opts.staticRoot
+  this.ecstatic = ecstatic({
+    cache: 0,
+    root: this.staticRoot,
+    handleError: false
+  })
   this.core = new Core(osm, media, this.opts)
   this.core.on('error', function (err) {
     error(err)
@@ -111,11 +117,7 @@ Api.prototype.presetsList = function (req, res, m) {
 }
 
 Api.prototype.presetsGet = function (req, res, m) {
-  ecstatic({
-    cache: 0,
-    root: this.staticRoot,
-    handleError: false
-  })(req, res)
+  this.ecstatic(req, res)
 }
 
 // Media
@@ -223,11 +225,7 @@ Api.prototype.stylesGetStyle = function (req, res, m) {
 }
 
 Api.prototype.stylesGetStatic = function (req, res, m) {
-  ecstatic({
-    cache: 0,
-    root: this.staticRoot,
-    handleError: false
-  })(req, res)
+  this.ecstatic(req, res)
 }
 
 Api.prototype.stylesGet = function (req, res, m) {
