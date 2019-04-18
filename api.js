@@ -230,11 +230,11 @@ Api.prototype.stylesGetStatic = function (req, res, m) {
 
 Api.prototype.stylesGet = function (req, res, m) {
   var self = this
-  var asarPath = path.join(self.staticRoot, 'styles', m.id, 'tiles', m.tileid + '.asar')
-
   var ext = m.ext
+  var tileid = m.tileid || m.id
   var buf
   var baseFilename = [m.z, m.y, m.x].join(path.sep)
+  var asarPath = path.join(self.staticRoot, 'styles', m.id, 'tiles', tileid + '.asar')
   if (ext) buf = asarGet(asarPath, baseFilename + '.' + ext)
   else {
     // Guess the extension
