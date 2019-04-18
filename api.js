@@ -232,19 +232,37 @@ Api.prototype.stylesGet = function (req, res, m) {
   var self = this
   var asarPath = path.join(self.staticRoot, 'styles', m.id, 'tiles', m.tileid + '.asar')
 
-  var filename = [m.z, m.y, m.x].join(path.sep) + '.' + m.ext
-  var buf = asarGet(asarPath, filename)
+  var ext = m.ext
+  var buf
+  var baseFilename = [m.z, m.y, m.x].join(path.sep)
+  if (ext) buf = asarGet(asarPath, baseFilename + '.' + ext)
+  else {
+    // Guess the extension
+    var guesses = ['png', 'jpg', 'jpeg']
+    guesses.every((_ext) => {
+      var filename = baseFilename + '.' + _ext
+      buf = asarGet(asarPath, filename)
+      if (buf) {
+        // if the file exists in the asar, lets use that ext
+        ext = _ext
+        return false
+      }
+      return true
+    })
+  }
 
+  // if theres a buffer then the file exists and we know the extension
   if (buf) {
     var mime
-    switch (m.ext) {
+    switch (ext) {
       case 'png': mime = 'image/png'; break
       case 'jpg': mime = 'image/jpg'; break
+      case 'jpeg': mime = 'image/jpeg'; break
     }
     if (mime) res.setHeader('content-type', mime)
 
     // Set gzip encoding on {mvt,pbf} tiles.
-    if (/mvt|pbf$/.test(m.ext)) res.setHeader('content-encoding', 'gzip')
+    if (/mvt|pbf$/.test(ext)) res.setHeader('content-encoding', 'gzip')
 
     res.end(buf)
   } else {
