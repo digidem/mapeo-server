@@ -28,6 +28,15 @@ module.exports = function (osm, media, opts) {
   router.addRoute('GET /styles', api.stylesList.bind(api))
   router.addRoute('GET /styles/:id/tiles/:tileid/:z/:y/:x.:ext',
     api.stylesGet.bind(api))
+  router.addRoute('GET /styles/:id/tiles/:tileid/:z/:y/:x',
+    api.stylesGet.bind(api))
+
+  // Here, id is assumed to be the same as tileid
+  router.addRoute('GET /styles/:id/tiles/:z/:y/:x.:ext',
+    api.stylesGet.bind(api))
+  router.addRoute('GET /styles/:id/tiles/:z/:y/:x',
+    api.stylesGet.bind(api))
+
   router.addRoute('GET /styles/:id/style.json', api.stylesGetStyle.bind(api))
   router.addRoute('GET /styles/:id/*', api.stylesGetStatic.bind(api))
 
