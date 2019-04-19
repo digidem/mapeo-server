@@ -158,6 +158,12 @@ Retrieve the `style.json` file for a given style.
 
 Fetch a single vector tile from the tileset `id` by an `x`,`y`,`z` coordinate.
 
+#### `GET /styles/:id/tiles/:tileid/:x/:y/:z.:ext`
+
+Fetch a single vector tile from the tileset `id` by an `x`,`y`,`z` coordinate.
+Supports a `tileid` which would be a subdirectory or an asar file under the
+`tiles/` directory, so support multiple tilesets per dataset id.
+
 ### Sync
 
 #### `GET /sync/listen`
