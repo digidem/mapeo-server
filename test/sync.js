@@ -40,12 +40,12 @@ test('sync - two-server listen and dont find eachother', function (t) {
       }))
       setTimeout(function () {
         r.destroy()
-      }, 400)
+      }, 2000)
       r.on('error', function (err) {
         t.error(err)
       })
       r.on('end', function () {
-        t.ok(times > 2)
+        t.ok(times >= 2)
         destroy(a, b, function (err) {
           t.error(err)
           a.server.close()
