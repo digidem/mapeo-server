@@ -6,6 +6,7 @@ var randombytes = require('randombytes')
 var asar = require('asar')
 var ecstatic = require('ecstatic')
 var Core = require('@mapeo/core')
+var debounce = require('debounce')
 var errors = Core.errors
 
 module.exports = Api
@@ -336,7 +337,8 @@ Api.prototype.syncStart = function (req, res, m, q) {
   } else return onerror(res, 'Requires filename or host and port')
   if (!events) return onerror(res, 'Target not found')
 
-  events.on('progress', onprogress)
+  var debounceProgress = debounce(onprogress, q.interval || 2000)
+  events.on('progress', debounceProgress)
   events.on('error', onend)
   events.on('end', onend)
 
@@ -347,9 +349,10 @@ Api.prototype.syncStart = function (req, res, m, q) {
   }
 
   function onend (err) {
+    debounceProgress.clear()
+    events.removeListener('progress', onprogress)
     if (err) return onerror(res, err.message)
     send(res, 'replication-complete')
-    events.removeListener('progress', onprogress)
     res.end()
   }
 

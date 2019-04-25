@@ -25,6 +25,7 @@
     "@mapeo/core": "^4.2.1",
     "asar": "^0.14.3",
     "body": "^5.1.0",
+    "debounce": "^1.2.0",
     "debug": "^4.1.0",
     "ecstatic": "^3.2.1",
     "inherits": "^2.0.3",
