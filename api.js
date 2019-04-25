@@ -350,7 +350,7 @@ Api.prototype.syncStart = function (req, res, m, q) {
 
   function onend (err) {
     debounceProgress.clear()
-    events.removeListener('progress', onprogress)
+    events.removeListener('progress', debounceProgress)
     if (err) return onerror(res, err.message)
     send(res, 'replication-complete')
     res.end()
