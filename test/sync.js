@@ -1,5 +1,6 @@
 var test = require('tape')
 var needle = require('needle')
+var pump = require('pump')
 var hyperquest = require('hyperquest')
 var through = require('through2')
 var {
@@ -10,6 +11,7 @@ var {
   createServer,
   twoServers
 } = require('./server')
+
 
 test('sync - announce and close', function (t) {
   createServer(function (server, base) {
@@ -116,7 +118,7 @@ test('sync - two-server sync', function (t) {
         t.equal(entry.name, 'peer2')
         var href = a.base + `/sync/start?host=${entry.host}&port=${entry.port}`
         var hq = hyperquest(href, {end: false})
-        hq.pipe(through.obj(function (data, enc, next) {
+        var go = through.obj(function (data, enc, next) {
           var text
           try {
             text = JSON.parse(data.toString())
@@ -124,11 +126,17 @@ test('sync - two-server sync', function (t) {
             t.fail('JSON parse failed: ' + data.toString())
           }
           t.ok(RegExp(/replication-(complete|progress|started)/).test(text.topic))
-          next()
-        }))
-        hq.on('end', function () {
-          done()
+          if (text.topic === 'replication-complete') {
+            needle.get(a.base + '/sync/peers', function (err, resp, body) {
+              t.error(err)
+              var peers = body.message
+              t.same(peers.length, 1, 'one peer')
+              t.same(peers[0].state.topic, 'replication-complete')
+              next()
+            })
+          } else next()
         })
+        pump(hq, go, done)
       })
     })
     a._name = 'peer1'

@@ -329,12 +329,12 @@ Api.prototype.syncPeers = function (req, res, m, q) {
 
 Api.prototype.syncStart = function (req, res, m, q) {
   var self = this
-  var events
-  if (q.filename) {
-    events = self.core.sync.replicateFromFile(q.filename, self.opts)
-  } else if (q.host && q.port) {
-    events = self.core.sync.start(q, self.opts)
-  } else return onerror(res, 'Requires filename or host and port')
+  try {
+    var events = this.core.sync.replicate(q, self.opts)
+  } catch (err) {
+    return onerror(res, err)
+  }
+
   if (!events) return onerror(res, 'Target not found')
 
   var debounceProgress = debounce(onprogress, q.interval || 2000)
@@ -358,7 +358,7 @@ Api.prototype.syncStart = function (req, res, m, q) {
 
   function onerror (res, err) {
     res.statusCode = 500
-    var str = JSON.stringify({topic: 'replication-error', message: err.message || err}) + '\n'
+    var str = JSON.stringify({topic: 'replication-error', message: (err && err.message) || err}) + '\n'
     res.end(str)
   }
 }
