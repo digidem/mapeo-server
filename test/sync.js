@@ -69,7 +69,7 @@ test('sync - two-server listen and join and find eachother', function (t) {
         } catch (err) {
           t.fail('JSON parse failed: ' + data.toString())
         }
-        t.equal(body.message.length, 1)
+        t.equal(body.message.length, 1, 'message expected length')
         var entry = body.message[0]
         t.equal(entry.type, 'wifi')
         next()
@@ -80,7 +80,7 @@ test('sync - two-server listen and join and find eachother', function (t) {
       hq.on('error', function (err) { t.error(err) })
       hq.on('end', function () {
         destroy(a, b, function (err) {
-          t.error(err)
+          t.error(err, 'destroyed without error')
           a.server.close()
           b.server.close()
           t.end()
@@ -88,9 +88,9 @@ test('sync - two-server listen and join and find eachother', function (t) {
       })
     })
     listen(a, b, function (err) {
-      t.error(err)
+      t.error(err, 'server listening without error')
       join(a, b, function (err) {
-        t.error(err)
+        t.error(err, 'join without error')
       })
     })
   })
