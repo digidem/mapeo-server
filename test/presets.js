@@ -53,6 +53,26 @@ test('presets: get', function (t) {
   })
 })
 
+test('presets: 404', function (t) {
+  createServer(function (server, base) {
+    var href = base + '/presets/unknown_id/missing.json'
+    var hq = hyperquest.get(href)
+    hq.once('response', function (res) {
+      t.equal(res.statusCode, 404, 'get 404 ok')
+      t.ok(/application\/json/.test(res.headers['content-type']), 'type correct')
+
+      hq.pipe(concat(function (body) {
+        t.deepEquals(JSON.parse(body.toString()), { error: 'Not Found', status: 404 })
+        server.close()
+        t.end()
+      }))
+    })
+    hq.once('error', function (err) {
+      t.error(err, 'no http error')
+    })
+  })
+})
+
 test('presets: get default passthrough', function (t) {
   createServer({
     port: 5000,
