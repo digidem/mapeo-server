@@ -22,7 +22,11 @@ Creates a mapeo http server.
 `media` is an instance of [abstract-blob-store][abstract-blob-store]. In order to do sync correctly, it must be patched with a `list(cb)` method, or you can use a blob store that already supports this, like [safe-fs-blob-store][safe-fs-blob-store].
 
 Valid `opts` include
-- `staticRoot` (string): the filesystem path to serve static files, like styles and tiles from.
+- `staticRoot` (string): the filesystem path to serve static files, like styles
+  and tiles from.
+- `fallbackPresetsDir` (string): the filesystem path to serve as a fallback for
+  requests to `/presets` if no files exist in `staticRoot/presets`. Useful for
+  serving defaults that can be overridden by user files in `staticRoot`.
 
 ### var handled = server.handle(req, res)
 
@@ -298,4 +302,3 @@ Relies on `fs` for media copying right now: this is a bug.
 [kappa-osm]: https://github.com/digidem/kappa-osm
 [abstact-blob-store]: https://github.com/maxogden/abstract-blob-store
 [safe-fs-blob-store]: https://github.com/noffle/safe-fs-blob-store
-
