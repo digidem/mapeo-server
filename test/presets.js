@@ -52,3 +52,28 @@ test('presets: get', function (t) {
     })
   })
 })
+
+test('presets: get default passthrough', function (t) {
+  createServer({
+    port: 5000,
+    fallbackPresetsDir: path.join(__dirname, '..', 'presets'),
+    staticRoot: __dirname
+  }, function (server, base) {
+    var expected = fs.readFileSync(path.join(__dirname, '..', 'presets', 'jungle', 'icons.svg'), 'utf-8')
+    var href = base + '/presets/jungle/icons.svg'
+    var hq = hyperquest.get(href)
+    hq.once('response', function (res) {
+      t.equal(res.statusCode, 200, 'get 200 ok')
+      t.ok(/image\/svg\+xml/.test(res.headers['content-type']), 'type correct')
+
+      hq.pipe(concat(function (body) {
+        t.equals(body.toString(), expected)
+        server.close()
+        t.end()
+      }))
+    })
+    hq.once('error', function (err) {
+      t.error(err, 'no http error')
+    })
+  })
+})

@@ -26,6 +26,14 @@ function Api (osm, media, opts) {
     root: this.staticRoot,
     handleError: false
   })
+  if (opts.fallbackPresetsDir) {
+    this.ecstaticFallbackPresets = ecstatic({
+      cache: 0,
+      root: opts.fallbackPresetsDir,
+      baseDir: 'presets',
+      handleError: false
+    })
+  }
   this.core = new Core(osm, media, this.opts)
   this.core.on('error', function (err) {
     error(err)
@@ -118,7 +126,16 @@ Api.prototype.presetsList = function (req, res, m) {
 }
 
 Api.prototype.presetsGet = function (req, res, m) {
-  this.ecstatic(req, res)
+  this.ecstatic(req, res, (err) => {
+    if (err) return handleError(res, err)
+    if (this.ecstaticFallbackPresets) {
+      this.ecstaticFallbackPresets(req, res, (err) => {
+        handleError(res, err || errors.NotFound())
+      })
+    } else {
+      handleError(res, errors.NotFound())
+    }
+  })
 }
 
 // Media
