@@ -206,10 +206,12 @@ name is set.
 GET /sync/peers?interval=300
 
 // then every 300ms...
-{ topic: 'peers', message: [{ip: '127.0.0.1', port: 1337, host: 'hostname', name: "Karissa's Device"}]}
-{ topic: 'peers', message: [{ip: '127.0.0.1', port: 1337, host: 'hostname', name: "Karissa's Device"}]}
+{ topic: 'peers', message: [{ip: '127.0.0.1', port: 1337, host: 'hostname', name: "Karissa's Device", {state: StateObject}}]}
+{ topic: 'peers', message: [{name: "/path/to/my/syncfile.mapeodata", {state: StateObject}}]}
 
 ```
+
+A `StateObject` has a `topic` and `message` which give you an idea of what the current state 
 
 #### `GET /sync/start`
 
