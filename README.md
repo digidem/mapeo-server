@@ -107,13 +107,28 @@ Fetch a static file belonging to a preset with id `id`.
 
 ### Media
 
-#### `PUT /media?file=PATH&thumbnail=PATH`
+#### `POST /media`
 
-Save a piece of media (photos only) to the database, identified by the absolute
-file path `PATH` on the same machine as the server. `PATH` must be URL
-encoded.
+Save a photo to the database, expects a JSON object in the body of the request
+with the following properties:
 
-Optionally, a thumbnail file path may also be included.
+- `original` (string)
+- `preview` (string)
+- `thumbnail` (string)
+
+Each of these properties must be an absolute filepath pointing to the location
+of the media in the local filesystem. The files will be copied to the database
+and can be safely deleted once the request completes successfully. All 3 sizes
+are required and should be the following sizes:
+
+- *original*: full-size original media
+- *preview*: maximum dimension 2000px
+- *thumbnail*: maximum dimension 400px
+
+Original media is not syncronized between mobile devices, but previews and
+thumbnails are. Original media is always syncronized with desktop devices. In
+the future Mapeo may more intelligently manage full-size media in order to save
+space on mobile.
 
 A single JSON object is returned, with the media's unique `id`:
 
@@ -127,7 +142,8 @@ To fetch the thumbnail later, one would hit the route `GET /media/thumbnail/2259
 
 #### `GET /media/:type/:id`
 
-Retrieve a piece of media (photos only for now) by its `id`. Valid `type`s are `original` and `thumbnail`. e.g.
+Retrieve a piece of media (photos only for now) by its `id`. Valid `type`s are
+`original`, `preview` and `thumbnail`. e.g.
 
 ```
 GET /media/thumbnail/225961fb85d82312e8c0ed511.jpg
@@ -211,7 +227,7 @@ GET /sync/peers?interval=300
 
 ```
 
-A `StateObject` has a `topic` and `message` which give you an idea of what the current state 
+A `StateObject` has a `topic` and `message` which give you an idea of what the current state
 
 #### `GET /sync/start`
 
