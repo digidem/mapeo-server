@@ -7,9 +7,15 @@ var asar = require('asar')
 var ecstatic = require('ecstatic')
 var Core = require('@mapeo/core')
 var debounce = require('debounce')
+var mime = require('mime')
 var errors = Core.errors
 
 module.exports = Api
+
+const customMimeTypes = {
+  'application/x-protobuf': ['pbf']
+}
+mime.define(customMimeTypes)
 
 function Api (osm, media, opts) {
   if (!(this instanceof Api)) return new Api(osm, media, opts)
@@ -22,13 +28,15 @@ function Api (osm, media, opts) {
   this.opts = Object.assign(defaultOpts, opts)
   this.staticRoot = this.opts.staticRoot
   this.ecstatic = ecstatic({
-    cache: 0,
+    cache: 60 * 5, // 5 minutes
+    mimeTypes: customMimeTypes,
     root: this.staticRoot,
     handleError: false
   })
   if (opts.fallbackPresetsDir) {
     this.ecstaticFallbackPresets = ecstatic({
-      cache: 0,
+      cache: 60 * 5, // 5 minutes
+      mimeTypes: customMimeTypes,
       root: opts.fallbackPresetsDir,
       baseDir: 'presets',
       handleError: false
@@ -273,13 +281,9 @@ Api.prototype.stylesGet = function (req, res, m) {
 
   // if theres a buffer then the file exists and we know the extension
   if (buf) {
-    var mime
-    switch (ext) {
-      case 'png': mime = 'image/png'; break
-      case 'jpg': mime = 'image/jpg'; break
-      case 'jpeg': mime = 'image/jpeg'; break
-    }
-    if (mime) res.setHeader('content-type', mime)
+    var mimeType = mime.getType(ext)
+    console.log(ext, mimeType)
+    if (mimeType) res.setHeader('content-type', mimeType)
 
     // Set gzip encoding on {mvt,pbf} tiles.
     if (/mvt|pbf$/.test(ext)) res.setHeader('content-encoding', 'gzip')
@@ -415,6 +419,7 @@ function serveStyleFile (styleFile, id, req, res) {
       data = Buffer.from(data.replace(/\{host\}/gm, 'http://' + req.headers.host + '/styles/' + id))
       res.setHeader('content-type', 'application/json; charset=utf-8')
       res.setHeader('last-modified', (new Date(stat.mtime)).toUTCString())
+      res.setHeader('cache-control', 'max-age=' + 5 * 60) // 5 minutes
       res.setHeader('content-length', data.length)
       res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type, If-Match, If-Modified-Since, If-None-Match, If-Unmodified-Since')
       res.setHeader('Access-Control-Allow-Origin', '*')
