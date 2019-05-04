@@ -37,6 +37,7 @@
   "devDependencies": {
     "@segment/isodate": "^1.0.3",
     "abstract-blob-store": "^3.3.4",
+    "collect-stream": "^1.2.1",
     "concat-stream": "^1.6.2",
     "dependency-check": "^3.3.0",
     "hyperquest": "^2.1.3",

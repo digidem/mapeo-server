@@ -152,50 +152,52 @@ Api.prototype.mediaGet = function (req, res, m) {
   })
 }
 
-Api.prototype.mediaPut = function (req, res, m, q) {
-  if (!q.file || !fs.existsSync(q.file)) {
-    res.statusCode = 400
-    return handleError(res, new Error(`Filename ${q.file} does not exist`))
-  }
-  if (q.thumbnail && !fs.existsSync(q.thumbnail)) {
-    res.statusCode = 400
-    return handleError(res, new Error(`Filename ${q.thumbnail} does not exist`))
-  }
+const expectedMediaFormats = ['original', 'preview', 'thumbnail']
 
-  var self = this
+Api.prototype.mediaPost = function (req, res, m, q) {
+  const self = this
+  let pending = expectedMediaFormats.length
+  let errorSent = false
 
-  var ext = path.extname(q.file)
-  var id = randombytes(16).toString('hex') + ext
-  res.setHeader('content-type', 'application/json')
+  body(req, function (err, media) {
+    if (err) return handleError(res, errors.JSONParseError())
+    if (!media) return handleError(res, new Error('Empty request body'))
 
-  var mediaPath = 'original/' + id
-  var thumbnailPath = 'thumbnail/' + id
+    for (let format of expectedMediaFormats) {
+      if (!media[format]) return error(400, new Error(`Request body is missing ${format} property`))
+      if (!fs.existsSync(media[format])) return error(400, new Error(`File ${media[format]} does not exist`))
+    }
+
+    // Use the extension of the original media - assumes thumbnail and preview
+    // is the same format / has the same extension.
+    const ext = path.extname(media.original)
+    const newMediaId = randombytes(16).toString('hex') + ext
+
+    for (let format of expectedMediaFormats) {
+      var destPath = format + '/' + newMediaId
+      copyFileTo(media[format], destPath, done)
+    }
+
+    function done (err) {
+      if (err) return error(500, new Error('There was a problem saving the media to the server'))
+      if (--pending) return
+      if (errorSent) return
+
+      res.setHeader('content-type', 'application/json')
+      res.end(JSON.stringify({id: newMediaId}))
+    }
+  })
 
   function copyFileTo (file, to, cb) {
     var ws = self.core.media.createWriteStream(to, cb)
     fs.createReadStream(file).pipe(ws)
   }
 
-  var pending = 1
-  if (q.thumbnail) pending++
-
-  // Copy original media
-  copyFileTo(q.file, mediaPath, function (err) {
-    if (err) return handleError(res, err)
-    if (!--pending) done()
-  })
-
-  // Copy thumbnail
-  if (q.thumbnail) {
-    copyFileTo(q.thumbnail, thumbnailPath, function (err) {
-      if (err) return handleError(res, err)
-      if (!--pending) done()
-    })
-  }
-
-  function done () {
-    if (pending) return
-    res.end(JSON.stringify({id: id}))
+  function error (code, error) {
+    if (errorSent) return
+    errorSent = true
+    error.status = code
+    handleError(res, error)
   }
 }
 

@@ -22,7 +22,7 @@ module.exports = function (osm, media, opts) {
 
   // Media
   router.addRoute('GET /media/:type/:id', api.mediaGet.bind(api))
-  router.addRoute('PUT /media', api.mediaPut.bind(api))
+  router.addRoute('POST /media', api.mediaPost.bind(api))
 
   // Styles 'n Tiles
   router.addRoute('GET /styles', api.stylesList.bind(api))
