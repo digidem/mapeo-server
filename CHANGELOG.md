@@ -1,17 +1,23 @@
-# Changelog
+# Change Log
 
-All notable changes to this project will be documented in this file.
+All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
-and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
-
-## [Unreleased]
-
-### Changed
-
-- Changed prop from `created_at_timestamp` to `timestamp`
-- Changed timestamp format from milliseconds since unix epoc to a UTC string (match the timestamp format of osm types)
-- More strict checking of observation properties on create and update
+# [15.0.0](https://github.com/digidem/mapeo-server/compare/v14.0.0...v15.0.0) (2019-05-04)
 
 
-[Unreleased]: https://github.com/digidem/mapeo-server/compare/v7.0.3...HEAD
+### Bug Fixes
+
+* Correct cache-control and content-type headers ([bcf2bd3](https://github.com/digidem/mapeo-server/commit/bcf2bd3))
+
+
+### Features
+
+* **media:** Add preview images as well as thumbnail and original [BREAKING] ([#47](https://github.com/digidem/mapeo-server/issues/47)) ([0189c29](https://github.com/digidem/mapeo-server/commit/0189c29))
+
+
+### BREAKING CHANGES
+
+* **media:** Changes media route to POST instead of PUT, because PUT should be id-empotent, whereas this endpoint creates new resources for every POST.
+* **media:** Pass parameters in the body of the request, rather than query string, to avoid url encoding issues
+* **media:** Pass original as `original` property, rather than `file`
+* **media:** All 3 image sizes are required

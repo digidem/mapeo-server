@@ -1,11 +1,12 @@
 {
   "name": "mapeo-server",
-  "version": "14.0.0",
+  "version": "15.0.0",
   "description": "Mapeo Mobile server, used for managing observation data. It includes observation and media management routes and static file routes for an offline tile server.",
   "main": "index.js",
   "scripts": {
     "test": "tape test/*.js",
     "deps": "dependency-check .",
+    "release": "standard-version",
     "lint": "standard"
   },
   "repository": {
@@ -52,6 +53,7 @@
     "rimraf": "^2.6.3",
     "safe-fs-blob-store": "^1.0.3",
     "standard": "^11.0.1",
+    "standard-version": "^5.0.2",
     "tape": "^4.9.1",
     "through2": "^3.0.1",
     "tmp": "^0.1.0"
