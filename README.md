@@ -320,3 +320,16 @@ Relies on `fs` for media copying right now: this is a bug.
 [kappa-osm]: https://github.com/digidem/kappa-osm
 [abstact-blob-store]: https://github.com/maxogden/abstract-blob-store
 [safe-fs-blob-store]: https://github.com/noffle/safe-fs-blob-store
+
+## Community
+
+Connect with the Mapeo community for support & to contribute!
+
+- [**Mailing List**](https://lists.riseup.net/www/info/mapeo-en) (English)
+- [**Mailing List**](https://lists.riseup.net/www/info/mapeo-es) (Spanish)
+- [**IRC**](https://kiwiirc.com/nextclient/irc.freenode.net/) (channel #ddem)
+- [**Slack**](http://slack.digital-democracy.org)
+
+## License
+
+MIT
