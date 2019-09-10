@@ -30,29 +30,36 @@ test('sync - two-server listen and dont find eachother', function (t) {
   twoServers(function (a, b) {
     listen(a, b, function (err) {
       t.error(err)
-      var href = a.base + `/sync/peers?interval=100`
-      var r = hyperquest(href, {end: false})
-      var times = 0
-      r.pipe(through.obj(function (data, enc, next) {
-        var body = JSON.parse(data)
-        t.equal(body.topic, 'peers')
-        t.equal(body.message.length, 0)
-        times += 1
-        next()
-      }))
-      setTimeout(function () {
-        r.destroy()
-      }, 2000)
-      r.on('error', function (err) {
+      var opts = {
+        a: { projectId: 'foo' },
+        b: { projectId: 'bar' }
+      }
+      join(a, b, opts, function (err) {
         t.error(err)
-      })
-      r.on('end', function () {
-        t.ok(times >= 2)
-        destroy(a, b, function (err) {
+        var href = a.base + `/sync/peers?interval=100`
+        var r = hyperquest(href, {end: false})
+        var times = 0
+        r.pipe(through.obj(function (data, enc, next) {
+          var body = JSON.parse(data)
+          t.equal(body.topic, 'peers')
+          t.equal(body.message.length, 0)
+          times += 1
+          next()
+        }))
+        setTimeout(function () {
+          r.destroy()
+        }, 2000)
+        r.on('error', function (err) {
           t.error(err)
-          a.server.close()
-          b.server.close()
-          t.end()
+        })
+        r.on('end', function () {
+          t.ok(times >= 2)
+          destroy(a, b, function (err) {
+            t.error(err)
+            a.server.close()
+            b.server.close()
+            t.end()
+          })
         })
       })
     })
@@ -92,6 +99,49 @@ test('sync - two-server listen and join and find eachother', function (t) {
     listen(a, b, function (err) {
       t.error(err, 'server listening without error')
       join(a, b, function (err) {
+        t.error(err, 'join without error')
+      })
+    })
+  })
+})
+
+test('sync - two-server listen and join and find eachother /w same project_id', function (t) {
+  twoServers(function (a, b) {
+    a.router.api.core.sync.on('peer', function () {
+      var href = a.base + `/sync/peers`
+      var hq = hyperquest(href, {end: false})
+      hq.pipe(through.obj(function (data, enc, next) {
+        var body
+        try {
+          body = JSON.parse(data.toString())
+        } catch (err) {
+          t.fail('JSON parse failed: ' + data.toString())
+        }
+        t.equal(body.message.length, 1, 'message expected length')
+        var entry = body.message[0]
+        t.equal(entry.type, 'wifi')
+        next()
+      }))
+      setTimeout(function () {
+        hq.destroy()
+      }, 250)
+      hq.on('error', function (err) { t.error(err) })
+      hq.on('end', function () {
+        destroy(a, b, function (err) {
+          t.error(err, 'destroyed without error')
+          a.server.close()
+          b.server.close()
+          t.end()
+        })
+      })
+    })
+    listen(a, b, function (err) {
+      t.error(err, 'server listening without error')
+      var opts = {
+        a: { projectId: 'foo' },
+        b: { projectId: 'foo' }
+      }
+      join(a, b, opts, function (err) {
         t.error(err, 'join without error')
       })
     })

@@ -104,12 +104,22 @@ function destroy (a, b, cb) {
   })
 }
 
-function join (a, b, cb) {
+function join (a, b, opts, cb) {
+  if (typeof opts === 'function') {
+    cb = opts
+    opts = {}
+  }
   var nameA = a._name || 'unknown'
   var nameB = b._name || 'unknown'
-  needle.get(a.base + '/sync/join?name=' + nameA, function (err, resp, body) {
+
+  var urlA = a.base + '/sync/join?name=' + nameA
+  if (opts.a && opts.a.projectId) urlA += '&project_id='+opts.a.projectId
+  var urlB = b.base + '/sync/join?name=' + nameB
+  if (opts.b && opts.b.projectId) urlB += '&project_id='+opts.b.projectId
+
+  needle.get(urlA, function (err, resp, body) {
     if (err) return cb(err)
-    needle.get(b.base + '/sync/join?name=' + nameB, function (err, resp, body) {
+    needle.get(urlB, function (err, resp, body) {
       if (err) return cb(err)
       return cb()
     })
