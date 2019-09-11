@@ -36,6 +36,16 @@ Tries to handle an http request `req`, writing the result to `res`. Returns true
 
 The following routes are available.
 
+### Device
+
+#### `GET /device/id`
+
+Retrieve this device's unique 64-character ID, as a JSON string. E.g.
+
+```json
+"e685da71b0c0ecc19feac1a419b1064889cde89496ad58e973daf4b323edd471"
+```
+
 ### Observations
 
 #### `GET /observations?bbox=a,b,c,d`

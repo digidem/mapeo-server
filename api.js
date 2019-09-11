@@ -55,6 +55,16 @@ function handleError (res, err) {
   error(err)
 }
 
+// Device
+Api.prototype.deviceId = function (req, res) {
+  var self = this
+  this.core.getDeviceId(function (err, id) {
+    if (err) return handleError(res, err)
+    res.setHeader('content-type', 'application/json')
+    res.end(JSON.stringify(id))
+  })
+}
+
 // Observations
 Api.prototype.observationDelete = function (req, res, m) {
   var self = this

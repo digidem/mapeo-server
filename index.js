@@ -8,6 +8,9 @@ module.exports = function (osm, media, opts) {
   var router = Router()
   var api = Api(osm, media, opts)
 
+  // Device
+  router.addRoute('GET /device/id', api.deviceId.bind(api))
+
   // Observations
   router.addRoute('GET /observations', api.observationList.bind(api))
   router.addRoute('GET /observations/:id', api.observationGet.bind(api))
