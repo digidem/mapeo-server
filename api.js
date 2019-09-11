@@ -312,12 +312,12 @@ Api.prototype.syncDestroy = function (req, res, m) {
 
 Api.prototype.syncJoin = function (req, res, m, q) {
   if (q.name) this.core.sync.setName(q.name)
-  this.core.sync.join()
+  this.core.sync.join(q.project_id)
   res.end()
 }
 
 Api.prototype.syncLeave = function (req, res, m) {
-  this.core.sync.leave()
+  this.core.sync.leave(q.project_id)
   res.end()
 }
 
