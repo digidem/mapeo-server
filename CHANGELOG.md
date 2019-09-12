@@ -1,6 +1,15 @@
-# Change Log
+# Changelog
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
+
+## [16.1.0](https://github.com/digidem/mapeo-server/compare/v16.0.1...v16.1.0) (2019-09-12)
+
+
+### Features
+
+* Allow a project_id to be specified for swarming ([#51](https://github.com/digidem/mapeo-server/issues/51)) ([d7eb75f](https://github.com/digidem/mapeo-server/commit/d7eb75f))
+
+* Add /device/id route ([#50](https://github.com/digidem/mapeo-server/issues/50)) ([b582ef9](https://github.com/digidem/mapeo-server/commit/b582ef9))
 
 # [15.0.0](https://github.com/digidem/mapeo-server/compare/v14.0.0...v15.0.0) (2019-05-04)
 
