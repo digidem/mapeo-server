@@ -316,7 +316,7 @@ Api.prototype.syncJoin = function (req, res, m, q) {
   res.end()
 }
 
-Api.prototype.syncLeave = function (req, res, m) {
+Api.prototype.syncLeave = function (req, res, m, q) {
   this.core.sync.leave(q.project_id)
   res.end()
 }
