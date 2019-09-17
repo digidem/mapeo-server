@@ -1,6 +1,15 @@
-# Changelog
+# Change Log
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
+
+## [16.1.1](https://github.com/digidem/mapeo-server/compare/v16.1.0...v16.1.1) (2019-09-17)
+
+
+### Bug Fixes
+
+* Pass missing query screen to syncLeave ([8878f37](https://github.com/digidem/mapeo-server/commit/8878f37))
+
+
 
 ## [16.1.0](https://github.com/digidem/mapeo-server/compare/v16.0.1...v16.1.0) (2019-09-12)
 
