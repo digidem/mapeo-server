@@ -54,7 +54,7 @@ module.exports = function (osm, media, opts) {
   return {
     api,
     handle: function (req, res) {
-      var parsed = url.parse(req.url)
+      var parsed = url.parse(req.url) // eslint-disable-line node/no-deprecated-api
       var q = querystring.parse(parsed.query)
       var m = router.match(req.method + ' ' + parsed.pathname)
       if (m) {

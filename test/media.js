@@ -1,7 +1,7 @@
 var test = require('tape')
 var path = require('path')
 var hyperquest = require('hyperquest')
-var {listen, join, destroy, createServer, twoServers} = require('./server')
+var { listen, join, destroy, createServer, twoServers } = require('./server')
 var concat = require('concat-stream')
 var collect = require('collect-stream')
 var fs = require('fs')

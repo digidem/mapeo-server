@@ -1,6 +1,6 @@
 var test = require('tape')
 var hyperquest = require('hyperquest')
-var {createServer} = require('./server')
+var { createServer } = require('./server')
 var concat = require('concat-stream')
 var isodate = require('@segment/isodate')
 
@@ -27,7 +27,7 @@ test('observations: create', function (t) {
         t.ok(isodate.is(obj.timestamp), 'timestamp field set')
         t.ok(isodate.is(obj.created_at), 'created_at field set')
         t.equal(obj.schemaVersion, 3, 'could set schema version')
-        t.deepEqual(obj.metadata, {foo: 'bar'}, 'metadata passed through')
+        t.deepEqual(obj.metadata, { foo: 'bar' }, 'metadata passed through')
       } catch (e) {
         t.error(e, 'json parsing exception!')
       }
@@ -88,7 +88,7 @@ test('observations: create - ignores created_at passed by client', function (t) 
 
 test('observations: create + delete', function (t) {
   createServer(function (server, base) {
-    var data = JSON.stringify({lat: 5, lon: -0.123, type: 'observation'})
+    var data = JSON.stringify({ lat: 5, lon: -0.123, type: 'observation' })
 
     postJson(base + '/observations', data, function (obs) {
       t.error(obs.error)
@@ -114,7 +114,7 @@ test('observations: create + delete', function (t) {
 
 test('observations: create + get', function (t) {
   createServer(function (server, base, osm, media) {
-    var data = {lat: 1, lon: 2, type: 'observation'}
+    var data = { lat: 1, lon: 2, type: 'observation' }
     postJson(base + '/observations', data, function (obs) {
       t.error(obs.error)
 
@@ -160,14 +160,14 @@ test('observations: create + get', function (t) {
 
 test('observations: create + list', function (t) {
   createServer(function (server, base, osm, media) {
-    var _obs1 = {lat: 2, lon: 2, type: 'observation'}
+    var _obs1 = { lat: 2, lon: 2, type: 'observation' }
     postJson(base + '/observations', _obs1, function (obs1) {
       t.error(obs1.error)
 
-      var _obs2 = {lat: 2, lon: 3, type: 'observation'}
+      var _obs2 = { lat: 2, lon: 3, type: 'observation' }
       postJson(base + '/observations', _obs2, function (obs2) {
         t.error(obs2.error)
-        var expected = [ obs1, obs2 ]
+        var expected = [obs1, obs2]
         var href = base + '/observations'
         check(t, href, expected, function () {
           server.close()
@@ -228,18 +228,18 @@ test('observations: update metadata', function (t) {
     lat: 1,
     lon: 2,
     type: 'observation',
-    metadata: {foo: 'bar', qux: 'nux'},
+    metadata: { foo: 'bar', qux: 'nux' },
     timestamp: new Date().toISOString()
   }
   var update = {
     type: 'observation',
-    metadata: {foo: 'noo'}
+    metadata: { foo: 'noo' }
   }
   var expected = {
     lat: 1,
     lon: 2,
     type: 'observation',
-    metadata: {foo: 'noo'}
+    metadata: { foo: 'noo' }
   }
   testUpdateObservation(t, original, update, expected, function () {
     t.end()
@@ -251,20 +251,20 @@ test('observations: update to created_at ignored', function (t) {
     lat: 1,
     lon: 2,
     type: 'observation',
-    metadata: {foo: 'bar', qux: 'nux'},
+    metadata: { foo: 'bar', qux: 'nux' },
     timestamp: new Date().toISOString(),
     created_at: (new Date(2018, 0, 1)).toISOString()
   }
   var update = {
     type: 'observation',
-    metadata: {foo: 'noo'},
+    metadata: { foo: 'noo' },
     created_at: (new Date(2001, 0, 1)).toISOString()
   }
   var expected = {
     lat: 1,
     lon: 2,
     type: 'observation',
-    metadata: {foo: 'noo'},
+    metadata: { foo: 'noo' },
     created_at: (new Date(2018, 0, 1)).toISOString()
   }
   testUpdateObservation(t, original, update, expected, function () {

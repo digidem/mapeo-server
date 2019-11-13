@@ -34,8 +34,8 @@ test('sync - two-server listen and dont find eachother', function (t) {
       }
       join(a, b, opts, function (err) {
         t.error(err)
-        var href = a.base + `/sync/peers?interval=100`
-        var r = hyperquest(href, {end: false})
+        var href = a.base + '/sync/peers?interval=100'
+        var r = hyperquest(href, { end: false })
         var times = 0
         r.pipe(through.obj(function (data, enc, next) {
           var body = JSON.parse(data)
@@ -67,8 +67,8 @@ test('sync - two-server listen and dont find eachother', function (t) {
 test('sync - two-server listen and join and find eachother', function (t) {
   twoServers(function (a, b) {
     a.router.api.core.sync.on('peer', function () {
-      var href = a.base + `/sync/peers`
-      var hq = hyperquest(href, {end: false})
+      var href = a.base + '/sync/peers'
+      var hq = hyperquest(href, { end: false })
       hq.pipe(through.obj(function (data, enc, next) {
         var body
         try {
@@ -106,8 +106,8 @@ test('sync - two-server listen and join and find eachother', function (t) {
 test('sync - two-server listen and join and find eachother /w same project_id', function (t) {
   twoServers(function (a, b) {
     a.router.api.core.sync.on('peer', function () {
-      var href = a.base + `/sync/peers`
-      var hq = hyperquest(href, {end: false})
+      var href = a.base + '/sync/peers'
+      var hq = hyperquest(href, { end: false })
       hq.pipe(through.obj(function (data, enc, next) {
         var body
         try {
@@ -165,7 +165,7 @@ test('sync - two-server sync', function (t) {
         t.equal(entry.type, 'wifi')
         t.equal(entry.name, 'peer2')
         var href = a.base + `/sync/start?host=${entry.host}&port=${entry.port}`
-        var hq = hyperquest(href, {end: false})
+        var hq = hyperquest(href, { end: false })
         var go = through.obj(function (data, enc, next) {
           var text
           try {

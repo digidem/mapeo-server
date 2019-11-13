@@ -33,7 +33,7 @@ function createServer (opts, cb) {
   mkdirp.sync(dir)
 
   var osm = osmdb({
-    core: kappa(dir, {valueEncoding: 'json'}),
+    core: kappa(dir, { valueEncoding: 'json' }),
     index: level(path.join(dir, 'index')),
     storage: function (name, cb) {
       process.nextTick(cb, null, raf(path.join(dir, 'storage', name)))

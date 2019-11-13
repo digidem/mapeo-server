@@ -2,7 +2,7 @@ var test = require('tape')
 var tmp = require('tmp')
 var hyperquest = require('hyperquest')
 var through = require('through2')
-var {createServer} = require('./server')
+var { createServer } = require('./server')
 
 test('file sync - create syncfile', function (t) {
   var filename = tmp.fileSync().name
@@ -13,7 +13,7 @@ test('file sync - create syncfile', function (t) {
       t.end()
     }
     var href = base + `/sync/start?filename=${filename}`
-    var hq = hyperquest(href, {end: false})
+    var hq = hyperquest(href, { end: false })
     hq.pipe(through.obj(function (data, enc, next) {
       var text
       try {

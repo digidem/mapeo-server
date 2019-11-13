@@ -1,6 +1,6 @@
 var test = require('tape')
 var hyperquest = require('hyperquest')
-var {createServer} = require('./server')
+var { createServer } = require('./server')
 var concat = require('concat-stream')
 
 test('styles: list', function (t) {
@@ -20,15 +20,17 @@ test('styles: list', function (t) {
       try {
         var obj = JSON.parse(body)
         var expected = [
-          { id: 'sat-style',
+          {
+            id: 'sat-style',
             name: 'Satellite',
-            bounds: [ -122.339973, 37.742214, -122.150116, 37.856694 ],
+            bounds: [-122.339973, 37.742214, -122.150116, 37.856694],
             minzoom: 0,
             maxzoom: 22
           },
-          { id: 'streets-sat-style',
+          {
+            id: 'streets-sat-style',
             name: 'Mapbox Satellite Streets',
-            bounds: [ -122.339973, 37.742214, -122.150116, 37.856694 ],
+            bounds: [-122.339973, 37.742214, -122.150116, 37.856694],
             minzoom: 0,
             maxzoom: 16
           }

@@ -1,6 +1,6 @@
 var test = require('tape')
 var hyperquest = require('hyperquest')
-var {createServer} = require('./server')
+var { createServer } = require('./server')
 var concat = require('concat-stream')
 
 test('device: get id', function (t) {

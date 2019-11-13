@@ -70,7 +70,7 @@ Api.prototype.observationDelete = function (req, res, m) {
   self.core.observationDelete(m.id, function (err) {
     if (err) return handleError(res, err)
     res.setHeader('content-type', 'application/json')
-    res.end(JSON.stringify({deleted: true}))
+    res.end(JSON.stringify({ deleted: true }))
   })
 }
 
@@ -180,7 +180,7 @@ Api.prototype.mediaPost = function (req, res, m, q) {
     if (err) return handleError(res, errors.JSONParseError())
     if (!media) return handleError(res, new Error('Empty request body'))
 
-    for (let format of expectedMediaFormats) {
+    for (const format of expectedMediaFormats) {
       if (!media[format]) return error(400, new Error(`Request body is missing ${format} property`))
       if (!fs.existsSync(media[format])) return error(400, new Error(`File ${media[format]} does not exist`))
     }
@@ -190,7 +190,7 @@ Api.prototype.mediaPost = function (req, res, m, q) {
     const ext = path.extname(media.original)
     const newMediaId = randombytes(16).toString('hex') + ext
 
-    for (let format of expectedMediaFormats) {
+    for (const format of expectedMediaFormats) {
       var destPath = format + '/' + newMediaId
       copyFileTo(media[format], destPath, done)
     }
@@ -201,7 +201,7 @@ Api.prototype.mediaPost = function (req, res, m, q) {
       if (errorSent) return
 
       res.setHeader('content-type', 'application/json')
-      res.end(JSON.stringify({id: newMediaId}))
+      res.end(JSON.stringify({ id: newMediaId }))
     }
   })
 
@@ -390,7 +390,7 @@ Api.prototype.syncStart = function (req, res, m, q) {
 
   function onerror (res, err) {
     res.statusCode = 500
-    var str = JSON.stringify({topic: 'replication-error', message: (err && err.message) || err}) + '\n'
+    var str = JSON.stringify({ topic: 'replication-error', message: (err && err.message) || err }) + '\n'
     res.end(str)
   }
 }
