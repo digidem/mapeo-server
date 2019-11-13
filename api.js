@@ -57,7 +57,6 @@ function handleError (res, err) {
 
 // Device
 Api.prototype.deviceId = function (req, res) {
-  var self = this
   this.core.getDeviceId(function (err, id) {
     if (err) return handleError(res, err)
     res.setHeader('content-type', 'application/json')

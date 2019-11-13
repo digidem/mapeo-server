@@ -113,9 +113,9 @@ function join (a, b, opts, cb) {
   var nameB = b._name || 'unknown'
 
   var urlA = a.base + '/sync/join?name=' + nameA
-  if (opts.a && opts.a.projectId) urlA += '&project_id='+opts.a.projectId
+  if (opts.a && opts.a.projectId) urlA += '&project_id=' + opts.a.projectId
   var urlB = b.base + '/sync/join?name=' + nameB
-  if (opts.b && opts.b.projectId) urlB += '&project_id='+opts.b.projectId
+  if (opts.b && opts.b.projectId) urlB += '&project_id=' + opts.b.projectId
 
   needle.get(urlA, function (err, resp, body) {
     if (err) return cb(err)

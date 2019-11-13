@@ -4,7 +4,6 @@ var {createServer} = require('./server')
 var concat = require('concat-stream')
 
 test('device: get id', function (t) {
-
   createServer(function (server, base, osm, media) {
     var href = base + '/device/id'
     var expected
@@ -28,7 +27,6 @@ test('device: get id', function (t) {
       // response content
       hq.pipe(concat({ encoding: 'string' }, function (body) {
         try {
-          var key = JSON.parse(body)
           t.deepEqual(JSON.parse(body), expected, 'Expected error response')
           server.close()
           t.end()
@@ -39,4 +37,3 @@ test('device: get id', function (t) {
     }
   })
 })
-

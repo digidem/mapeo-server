@@ -6,12 +6,10 @@ var through = require('through2')
 var {
   listen,
   join,
-  leave,
   destroy,
   createServer,
   twoServers
 } = require('./server')
-
 
 test('sync - announce and close', function (t) {
   createServer(function (server, base) {

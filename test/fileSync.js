@@ -1,5 +1,4 @@
 var test = require('tape')
-var path = require('path')
 var tmp = require('tmp')
 var hyperquest = require('hyperquest')
 var through = require('through2')
