@@ -310,14 +310,22 @@ Api.prototype.syncDestroy = function (req, res, m) {
 }
 
 Api.prototype.syncJoin = function (req, res, m, q) {
-  if (q.name) this.core.sync.setName(q.name)
-  this.core.sync.join(q.project_id)
-  res.end()
+  try {
+    if (q.name) this.core.sync.setName(q.name)
+    this.core.sync.join(q.project_key)
+    res.end()
+  } catch (err) {
+    handleError(res, err)
+  }
 }
 
 Api.prototype.syncLeave = function (req, res, m, q) {
-  this.core.sync.leave(q.project_id)
-  res.end()
+  try {
+    this.core.sync.leave(q.project_key)
+    res.end()
+  } catch (err) {
+    handleError(res, err)
+  }
 }
 
 Api.prototype.syncListen = function (req, res, m) {

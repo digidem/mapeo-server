@@ -200,22 +200,20 @@ Supports a `tileid` which would be a subdirectory or an asar file under the
 
 Begin the sync server for listening for connections.  Returns 200 OK once server is up and running.
 
-Pass the url parameter `project_id=foo` to only discover other peers also interested in the project `foo`.
-
 #### `GET /sync/join`
 
 Join the network and become discoverable by other peers.
 
-Optionally, a name for this peer can be provided, to appear in others
-`/sync/targets` list.
+Optionally, a url parameter `name` for this peer can be provided, to appear in
+others' `/sync/targets` list.
 
-Pass the url parameter `project_id=foo` to only discover other peers also interested in the project `foo`.
+Pass the url parameter `project_key` to only discover other peers also interested in the same project. `project_key` should be a hex-encoded random 32-bytes, e.g. `crypto.randomBytes(32).toString('hex')`
 
 #### `GET /sync/leave`
 
 Leave the network and no longer be discoverable.
 
-Pass the url parameter `project_id=foo` if you passed it into `GET /sync/join` to unsubscribe to this particular project ID.
+Pass the url parameter `project_key` if you passed it into `GET /sync/join` to unsubscribe to this particular project.
 
 #### `GET /sync/destroy`
 

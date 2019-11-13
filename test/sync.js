@@ -31,8 +31,8 @@ test('sync - two-server listen and dont find eachother', function (t) {
     listen(a, b, function (err) {
       t.error(err)
       var opts = {
-        a: { projectId: crypto.randomBytes(32).toString('hex') },
-        b: { projectId: crypto.randomBytes(32).toString('hex') }
+        a: { projectKey: crypto.randomBytes(32).toString('hex') },
+        b: { projectKey: crypto.randomBytes(32).toString('hex') }
       }
       join(a, b, opts, function (err) {
         t.error(err)
@@ -139,8 +139,8 @@ test('sync - two-server listen and join and find each other /w same project_key'
     listen(a, b, function (err) {
       t.error(err, 'server listening without error')
       var opts = {
-        a: { projectId: projectKey },
-        b: { projectId: projectKey }
+        a: { projectKey: projectKey },
+        b: { projectKey: projectKey }
       }
       join(a, b, opts, function (err) {
         t.error(err, 'join without error')
