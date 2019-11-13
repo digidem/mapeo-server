@@ -182,20 +182,17 @@ test('observations: update lat/lon', function (t) {
   var original = {
     lat: 1,
     lon: 2,
-    device_id: '123',
     type: 'observation',
     timestamp: new Date().toISOString()
   }
   var update = {
     lat: 1.5,
     lon: 2,
-    device_id: '127',
     type: 'observation'
   }
   var expected = {
     lat: 1.5,
     lon: 2,
-    device_id: '123',
     type: 'observation'
   }
   testUpdateObservation(t, original, update, expected, function () {
@@ -550,6 +547,7 @@ function testUpdateObservation (t, orig, update, expected, cb) {
           delete obsCopy.id
           delete obsCopy.version
           delete obsCopy.timestamp
+          delete obsCopy.deviceId
           t.deepEquals(obsCopy, expected)
 
           var href = `${base}/observations/${obs.id}`
