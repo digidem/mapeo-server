@@ -3,6 +3,8 @@ var needle = require('needle')
 var pump = require('pump')
 var hyperquest = require('hyperquest')
 var through = require('through2')
+var crypto = require('crypto')
+
 var {
   listen,
   join,
@@ -29,8 +31,8 @@ test('sync - two-server listen and dont find eachother', function (t) {
     listen(a, b, function (err) {
       t.error(err)
       var opts = {
-        a: { projectId: 'foo' },
-        b: { projectId: 'bar' }
+        a: { projectId: crypto.randomBytes(32).toString('hex') },
+        b: { projectId: crypto.randomBytes(32).toString('hex') }
       }
       join(a, b, opts, function (err) {
         t.error(err)
@@ -103,7 +105,7 @@ test('sync - two-server listen and join and find eachother', function (t) {
   })
 })
 
-test('sync - two-server listen and join and find eachother /w same project_id', function (t) {
+test('sync - two-server listen and join and find each other /w same project_key', function (t) {
   twoServers(function (a, b) {
     a.router.api.core.sync.on('peer', function () {
       var href = a.base + '/sync/peers'
@@ -133,11 +135,12 @@ test('sync - two-server listen and join and find eachother /w same project_id', 
         })
       })
     })
+    const projectKey = crypto.randomBytes(32).toString('hex')
     listen(a, b, function (err) {
       t.error(err, 'server listening without error')
       var opts = {
-        a: { projectId: 'foo' },
-        b: { projectId: 'foo' }
+        a: { projectId: projectKey },
+        b: { projectId: projectKey }
       }
       join(a, b, opts, function (err) {
         t.error(err, 'join without error')
