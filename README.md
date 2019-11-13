@@ -65,11 +65,9 @@ returned. The response is a JSON array of observation objects. E.g.
 Creates an observation. Expects a single JSON object representing the
 observation. The following fields are required:
 
-- `lat` (Number or String)
-- `lon` (Number or String)
-- `device_id` (String)
+- `type` must be `observation`
 
-The object will be returned, with the fields `id` and `timestamp` set.
+The object will be returned, with the fields `id`, `version`, `created_at` and `timestamp` set.
 
 The property `ref` can also be optionally set, to indicate that the observation *observes* the OSM element with ID `ref`.
 
@@ -89,6 +87,8 @@ Update an observation by its `id` by providing a JSON object representing the ne
 - `ref`
 - `attachments`
 - `tags`
+- `metadata`
+- `schemaVersion`
 
 #### `PUT /observations/to-element/:id`
 
