@@ -1,6 +1,24 @@
-# Change Log
+# Changelog
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
+
+## [17.0.0](https://github.com/digidem/mapeo-server/compare/v16.1.1...v17.0.0) (2019-11-14)
+
+
+### ⚠ BREAKING CHANGES
+
+* Use 32-byte project_key as url param, instead of project_id
+* Fix sync issues with update to mapeo-core 8 and kappa-core 4
+
+### Features
+
+* Use 32-byte project_key as url param, instead of project_id ([fff3226](https://github.com/digidem/mapeo-server/commit/fff322623f33aa1507acd546b73a27b2cb67bec7))
+
+
+### Bug Fixes
+
+* Fix sync issues with update to mapeo-core 8 and kappa-core 4 ([d2aa43e](https://github.com/digidem/mapeo-server/commit/d2aa43ecab9f0dcf4e8016aebcecb60206e93744))
+* Fix tests which expected device_id ([2328e6d](https://github.com/digidem/mapeo-server/commit/2328e6d271013d1bcd02fe3f997fd9c19a218f2e))
 
 ## [16.1.1](https://github.com/digidem/mapeo-server/compare/v16.1.0...v16.1.1) (2019-09-17)
 
