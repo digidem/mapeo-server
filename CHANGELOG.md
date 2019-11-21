@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [18.0.0](https://github.com/digidem/mapeo-server/compare/v17.1.1...v18.0.0) (2019-11-14)
+
+
+### ⚠ BREAKING CHANGES
+
+* Improve sync reliability with update to mapeo-core 9 and kappa-core 5
+
 ## [17.0.0](https://github.com/digidem/mapeo-server/compare/v16.1.1...v17.0.0) (2019-11-14)
 
 
