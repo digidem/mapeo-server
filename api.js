@@ -1,14 +1,13 @@
 var error = require('debug')('mapeo-server:error')
 var fs = require('fs')
 var path = require('path')
-var body = require('body/json')
-var randombytes = require('randombytes')
 var asar = require('asar')
 var ecstatic = require('ecstatic')
-var Core = require('@mapeo/core')
-var debounce = require('debounce')
 var mime = require('mime')
-var errors = Core.errors
+
+// TODO: pull this code into this module so as not to pull in core code
+var MapeoCore = require('@mapeo/core')
+var errors = MapeoCore.errors
 
 module.exports = Api
 
@@ -17,15 +16,11 @@ const customMimeTypes = {
 }
 mime.define(customMimeTypes)
 
-function Api (osm, media, opts) {
-  if (!(this instanceof Api)) return new Api(osm, media, opts)
+function Api (opts) {
+  if (!(this instanceof Api)) return new Api(opts)
   if (!opts) opts = {}
-  var defaultOpts = {
-    id: 'MapeoDesktop_' + randombytes(8).toString('hex'),
-    staticRoot: '.'
-  }
+  this.opts = opts
 
-  this.opts = Object.assign(defaultOpts, opts)
   this.staticRoot = this.opts.staticRoot
   this.ecstatic = ecstatic({
     cache: 60 * 5, // 5 minutes
@@ -42,10 +37,6 @@ function Api (osm, media, opts) {
       handleError: false
     })
   }
-  this.core = new Core(osm, media, this.opts)
-  this.core.on('error', function (err) {
-    error(err)
-  })
 }
 
 function handleError (res, err) {
@@ -53,79 +44,6 @@ function handleError (res, err) {
   if (!err.status) err = errors(err)
   errors.send(res, err)
   error(err)
-}
-
-// Device
-Api.prototype.deviceId = function (req, res) {
-  this.core.getDeviceId(function (err, id) {
-    if (err) return handleError(res, err)
-    res.setHeader('content-type', 'application/json')
-    res.end(JSON.stringify(id))
-  })
-}
-
-// Observations
-Api.prototype.observationDelete = function (req, res, m) {
-  var self = this
-  self.core.observationDelete(m.id, function (err) {
-    if (err) return handleError(res, err)
-    res.setHeader('content-type', 'application/json')
-    res.end(JSON.stringify({ deleted: true }))
-  })
-}
-
-Api.prototype.observationList = function (req, res, m, q) {
-  this.core.observationList(q, function (err, results) {
-    if (err) return handleError(res, errors(err))
-    res.setHeader('content-type', 'application/json')
-    res.end(JSON.stringify(results))
-  })
-}
-
-Api.prototype.observationGet = function (req, res, m) {
-  this.core.observationGet(m.id, function (err, obses) {
-    if (err) return handleError(res, err)
-    res.setHeader('content-type', 'application/json')
-    res.end(JSON.stringify(obses))
-  })
-}
-
-Api.prototype.observationCreate = function (req, res, m) {
-  var self = this
-
-  body(req, function (err, obs) {
-    if (err) return handleError(res, errors.JSONParseError())
-
-    self.core.observationCreate(obs, function (err, newObs) {
-      if (err) return handleError(res, err)
-      res.setHeader('content-type', 'application/json')
-      res.end(JSON.stringify(newObs))
-    })
-  })
-}
-
-Api.prototype.observationUpdate = function (req, res, m) {
-  var self = this
-
-  body(req, function (err, newObs) {
-    if (err) return handleError(res, errors.JSONParseError())
-
-    if (newObs.id !== m.id) return handleError(res, errors.TypeMismatch(newObs.id, m.id))
-
-    self.core.observationUpdate(newObs, function (err, finalObs) {
-      if (err) return handleError(res, err)
-      res.setHeader('content-type', 'application/json')
-      res.end(JSON.stringify(finalObs))
-    })
-  })
-}
-
-Api.prototype.observationConvert = function (req, res, m) {
-  this.core.observationConvert(m.id, function (err, id) {
-    if (err) return handleError(res, err)
-    res.setHeader('content-type', 'application/json')
-    res.end(JSON.stringify({ id }))
-  })
 }
 
 // Presets
@@ -153,69 +71,6 @@ Api.prototype.presetsGet = function (req, res, m) {
       handleError(res, errors.NotFound())
     }
   })
-}
-
-// Media
-Api.prototype.mediaGet = function (req, res, m) {
-  var self = this
-  var id = m.type + '/' + m.id
-
-  this.core.media.exists(id, function (err, exists) {
-    if (err) return handleError(res, err)
-    if (!exists) return handleError(res, errors.NotFound())
-    if (m.id.endsWith('.jpg')) res.setHeader('content-type', 'image/jpeg')
-    else if (m.id.endsWith('.png')) res.setHeader('content-type', 'image/png')
-    self.core.media.createReadStream(id).pipe(res)
-  })
-}
-
-const expectedMediaFormats = ['original', 'preview', 'thumbnail']
-
-Api.prototype.mediaPost = function (req, res, m, q) {
-  const self = this
-  let pending = expectedMediaFormats.length
-  let errorSent = false
-
-  body(req, function (err, media) {
-    if (err) return handleError(res, errors.JSONParseError())
-    if (!media) return handleError(res, new Error('Empty request body'))
-
-    for (const format of expectedMediaFormats) {
-      if (!media[format]) return error(400, new Error(`Request body is missing ${format} property`))
-      if (!fs.existsSync(media[format])) return error(400, new Error(`File ${media[format]} does not exist`))
-    }
-
-    // Use the extension of the original media - assumes thumbnail and preview
-    // is the same format / has the same extension.
-    const ext = path.extname(media.original)
-    const newMediaId = randombytes(16).toString('hex') + ext
-
-    for (const format of expectedMediaFormats) {
-      var destPath = format + '/' + newMediaId
-      copyFileTo(media[format], destPath, done)
-    }
-
-    function done (err) {
-      if (err) return error(500, new Error('There was a problem saving the media to the server'))
-      if (--pending) return
-      if (errorSent) return
-
-      res.setHeader('content-type', 'application/json')
-      res.end(JSON.stringify({ id: newMediaId }))
-    }
-  })
-
-  function copyFileTo (file, to, cb) {
-    var ws = self.core.media.createWriteStream(to, cb)
-    fs.createReadStream(file).pipe(ws)
-  }
-
-  function error (code, error) {
-    if (errorSent) return
-    errorSent = true
-    error.status = code
-    handleError(res, error)
-  }
 }
 
 // Tiles
@@ -301,115 +156,6 @@ Api.prototype.stylesGet = function (req, res, m) {
   } else {
     return handleError(res, errors.NotFound())
   }
-}
-
-Api.prototype.syncDestroy = function (req, res, m) {
-  this.core.sync.close(function () {
-    res.end()
-  })
-}
-
-Api.prototype.syncJoin = function (req, res, m, q) {
-  try {
-    if (q.name) this.core.sync.setName(q.name)
-    this.core.sync.join(q.project_key)
-    res.end()
-  } catch (err) {
-    handleError(res, err)
-  }
-}
-
-Api.prototype.syncLeave = function (req, res, m, q) {
-  try {
-    this.core.sync.leave(q.project_key)
-    res.end()
-  } catch (err) {
-    handleError(res, err)
-  }
-}
-
-Api.prototype.syncListen = function (req, res, m) {
-  this.core.sync.listen(function () {
-    res.end()
-  })
-}
-
-Api.prototype._peers = function () {
-  return this.core.sync.peers()
-    .map(function (peer) {
-      var res = Object.assign({}, peer)
-      delete res.connection
-      return res
-    })
-}
-
-Api.prototype.syncPeers = function (req, res, m, q) {
-  var self = this
-  res.setHeader('Content-Type', 'application/json')
-  if (!q.interval) {
-    send(res, 'peers', self._peers())
-    return res.end()
-  }
-
-  var closed = false
-  var interval = setInterval(function () {
-    if (closed) return
-    send(res, 'peers', self._peers())
-  }, q.interval)
-
-  res.on('error', done)
-  res.on('close', done)
-
-  function done () {
-    clearInterval(interval)
-    closed = true
-    res.end()
-  }
-}
-
-Api.prototype.syncStart = function (req, res, m, q) {
-  var self = this
-  try {
-    var events = this.core.sync.replicate(q, self.opts)
-  } catch (err) {
-    return onerror(res, err)
-  }
-
-  if (!events) return onerror(res, 'Target not found')
-
-  var debounceProgress = debounce(onprogress, q.interval || 2000)
-  events.on('progress', debounceProgress)
-  events.on('error', onend)
-  events.on('end', onend)
-
-  send(res, 'replication-started')
-
-  function onprogress (progress) {
-    send(res, 'replication-progress', progress)
-  }
-
-  function onend (err) {
-    debounceProgress.clear()
-    events.removeListener('progress', debounceProgress)
-    if (err) return onerror(res, err.message)
-    send(res, 'replication-complete')
-    res.end()
-  }
-
-  function onerror (res, err) {
-    res.statusCode = 500
-    var str = JSON.stringify({ topic: 'replication-error', message: (err && err.message) || err }) + '\n'
-    res.end(str)
-  }
-}
-
-Api.prototype.close = function (cb) {
-  this.core.sync.close(cb)
-}
-
-function send (res, topic, message) {
-  var str = JSON.stringify({ topic, message }) + '\n'
-  res.write(str)
 }
 
 function asarGet (archive, fn) {

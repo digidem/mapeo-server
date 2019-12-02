@@ -4,28 +4,13 @@ var querystring = require('querystring')
 
 var Api = require('./api')
 
-module.exports = function (osm, media, opts) {
+module.exports = function (opts) {
   var router = Router()
-  var api = Api(osm, media, opts)
-
-  // Device
-  router.addRoute('GET /device/id', api.deviceId.bind(api))
-
-  // Observations
-  router.addRoute('GET /observations', api.observationList.bind(api))
-  router.addRoute('GET /observations/:id', api.observationGet.bind(api))
-  router.addRoute('POST /observations', api.observationCreate.bind(api))
-  router.addRoute('PUT /observations/:id', api.observationUpdate.bind(api))
-  router.addRoute('DELETE /observations/:id', api.observationDelete.bind(api))
-  router.addRoute('PUT /observations/to-element/:id', api.observationConvert.bind(api))
+  var api = Api(opts)
 
   // Presets
   router.addRoute('GET /presets', api.presetsList.bind(api))
   router.addRoute('GET /presets/:id/*', api.presetsGet.bind(api))
-
-  // Media
-  router.addRoute('GET /media/:type/:id', api.mediaGet.bind(api))
-  router.addRoute('POST /media', api.mediaPost.bind(api))
 
   // Styles 'n Tiles
   router.addRoute('GET /styles', api.stylesList.bind(api))
@@ -42,14 +27,6 @@ module.exports = function (osm, media, opts) {
 
   router.addRoute('GET /styles/:id/style.json', api.stylesGetStyle.bind(api))
   router.addRoute('GET /styles/:id/*', api.stylesGetStatic.bind(api))
-
-  // Sync
-  router.addRoute('GET /sync/start', api.syncStart.bind(api))
-  router.addRoute('GET /sync/peers', api.syncPeers.bind(api))
-  router.addRoute('GET /sync/listen', api.syncListen.bind(api))
-  router.addRoute('GET /sync/destroy', api.syncDestroy.bind(api))
-  router.addRoute('GET /sync/join', api.syncJoin.bind(api))
-  router.addRoute('GET /sync/leave', api.syncLeave.bind(api))
 
   return {
     api,
