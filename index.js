@@ -4,13 +4,17 @@ var querystring = require('querystring')
 
 var Api = require('./api')
 
-module.exports = function (opts) {
+module.exports = function (media, opts) {
   var router = Router()
-  var api = Api(opts)
+  var api = Api(media, opts)
 
   // Presets
   router.addRoute('GET /presets', api.presetsList.bind(api))
   router.addRoute('GET /presets/:id/*', api.presetsGet.bind(api))
+
+  // Media
+  router.addRoute('GET /media/:type/:id', api.mediaGet.bind(api))
+  router.addRoute('POST /media', api.mediaPost.bind(api))
 
   // Styles 'n Tiles
   router.addRoute('GET /styles', api.stylesList.bind(api))

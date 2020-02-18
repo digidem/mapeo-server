@@ -2,8 +2,10 @@ var error = require('debug')('mapeo-server:error')
 var fs = require('fs')
 var path = require('path')
 var asar = require('asar')
+var body = require('body/json')
 var ecstatic = require('ecstatic')
 var mime = require('mime')
+var randombytes = require('randombytes')
 
 // TODO: pull this code into this module so as not to pull in core code
 var MapeoCore = require('@mapeo/core')
@@ -16,10 +18,11 @@ const customMimeTypes = {
 }
 mime.define(customMimeTypes)
 
-function Api (opts) {
+function Api (media, opts) {
   if (!(this instanceof Api)) return new Api(opts)
   if (!opts) opts = {}
   this.opts = opts
+  this.media = media
 
   this.staticRoot = this.opts.staticRoot
   this.ecstatic = ecstatic({
@@ -72,6 +75,70 @@ Api.prototype.presetsGet = function (req, res, m) {
     }
   })
 }
+
+// Media
+Api.prototype.mediaGet = function (req, res, m) {
+  var self = this
+  var id = m.type + '/' + m.id
+
+  this.media.exists(id, function (err, exists) {
+    if (err) return handleError(res, err)
+    if (!exists) return handleError(res, errors.NotFound())
+    if (m.id.endsWith('.jpg')) res.setHeader('content-type', 'image/jpeg')
+    else if (m.id.endsWith('.png')) res.setHeader('content-type', 'image/png')
+    self.media.createReadStream(id).pipe(res)
+  })
+}
+
+const expectedMediaFormats = ['original', 'preview', 'thumbnail']
+
+Api.prototype.mediaPost = function (req, res, m, q) {
+  const self = this
+  let pending = expectedMediaFormats.length
+  let errorSent = false
+
+  body(req, function (err, media) {
+    if (err) return handleError(res, errors.JSONParseError())
+    if (!media) return handleError(res, new Error('Empty request body'))
+
+    for (const format of expectedMediaFormats) {
+      if (!media[format]) return error(400, new Error(`Request body is missing ${format} property`))
+      if (!fs.existsSync(media[format])) return error(400, new Error(`File ${media[format]} does not exist`))
+    }
+
+    // Use the extension of the original media - assumes thumbnail and preview
+    // is the same format / has the same extension.
+    const ext = path.extname(media.original)
+    const newMediaId = randombytes(16).toString('hex') + ext
+
+    for (const format of expectedMediaFormats) {
+      var destPath = format + '/' + newMediaId
+      copyFileTo(media[format], destPath, done)
+    }
+
+    function done (err) {
+      if (err) return error(500, new Error('There was a problem saving the media to the server'))
+      if (--pending) return
+      if (errorSent) return
+
+      res.setHeader('content-type', 'application/json')
+      res.end(JSON.stringify({ id: newMediaId }))
+    }
+  })
+
+  function copyFileTo (file, to, cb) {
+    var ws = self.media.createWriteStream(to, cb)
+    fs.createReadStream(file).pipe(ws)
+  }
+
+  function error (code, error) {
+    if (errorSent) return
+    errorSent = true
+    error.status = code
+    handleError(res, error)
+  }
+}
+
 
 // Tiles
 Api.prototype.stylesList = function (req, res, m) {
