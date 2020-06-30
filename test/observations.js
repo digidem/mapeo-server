@@ -471,10 +471,9 @@ function check (t, href, expected, done) {
   hq.pipe(concat({ encoding: 'string' }, function (body) {
     try {
       var objs = JSON.parse(body)
-      var sorter = (a, b) => a.id < b.id
       objs.forEach(obj => delete obj.timestamp)
       expected.forEach(obj => delete obj.timestamp)
-      t.deepEquals(objs.sort(sorter), expected.sort(sorter), 'observation from server matches expected')
+      t.deepEquals(objs.sort(idSort), expected.sort(idSort), 'observation from server matches expected')
     } catch (e) {
       t.error(e, 'json parsing exception!')
     }
@@ -560,4 +559,10 @@ function testUpdateObservation (t, orig, update, expected, cb) {
       hq.end(JSON.stringify(update))
     })
   })
+}
+
+function idSort (a, b) {
+  if (a.id < b.id) return -1
+  if (a.id > b.id) return +1
+  else return 0
 }
