@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [17.1.0](https://github.com/digidem/mapeo-server/compare/v17.0.7...v17.1.0) (2021-02-05)
+
+
+### Features
+
+* Add websocket sync via mapeo-core@8.5.0 ([#61](https://github.com/digidem/mapeo-server/issues/61)) ([2441799](https://github.com/digidem/mapeo-server/commit/244179975d1769b6d59f5d5be1730128d489d31b))
+
 ### [17.0.7](https://github.com/digidem/mapeo-server/compare/v17.0.6...v17.0.7) (2020-12-21)
 
 ### [17.0.1](https://github.com/digidem/mapeo-server/compare/v17.0.0...v17.0.1) (2019-11-25)
