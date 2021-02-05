@@ -12,10 +12,12 @@ on:
 jobs:
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
 
     strategy:
+      fail-fast: false
       matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
         node-version:
          - "10.x" # Not used in apps, but keeping for legacy support
          - "12.14.1" # Used in Mapeo Desktop (via Electron@9.2.1)
