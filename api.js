@@ -357,8 +357,8 @@ Api.prototype.syncPeers = function (req, res, m, q) {
     send(res, 'peers', self._peers())
   }, q.interval)
 
-  res.on('error', done)
-  res.on('close', done)
+  res.once('error', done)
+  res.once('close', done)
 
   function done () {
     clearInterval(interval)
@@ -378,9 +378,9 @@ Api.prototype.syncStart = function (req, res, m, q) {
   if (!events) return onerror(res, 'Target not found')
 
   var debounceProgress = debounce(onprogress, q.interval || 2000)
-  events.on('progress', debounceProgress)
-  events.on('error', onend)
-  events.on('end', onend)
+  events.once('progress', debounceProgress)
+  events.once('error', onend)
+  events.once('end', onend)
 
   send(res, 'replication-started')
 
