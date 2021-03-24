@@ -378,7 +378,7 @@ Api.prototype.syncStart = function (req, res, m, q) {
   if (!events) return onerror(res, 'Target not found')
 
   var debounceProgress = debounce(onprogress, q.interval || 2000)
-  events.once('progress', debounceProgress)
+  events.on('progress', debounceProgress)
   events.once('error', onend)
   events.once('end', onend)
 
