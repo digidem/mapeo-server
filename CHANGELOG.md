@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [17.1.1](https://github.com/digidem/mapeo-server/compare/v17.1.0...v17.1.1) (2021-10-12)
+
+
+### Bug Fixes
+
+* Upgrade mapeo core for sync file fix ([190a621](https://github.com/digidem/mapeo-server/commit/190a621ea13723ac02e386ec829a7587953ca146))
+
 ## [17.1.0](https://github.com/digidem/mapeo-server/compare/v17.0.7...v17.1.0) (2021-02-05)
 
 
