@@ -2,6 +2,8 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [17.1.2](https://github.com/digidem/mapeo-server/compare/v17.1.1...v17.1.2) (2021-11-16)
+
 ### [17.1.1](https://github.com/digidem/mapeo-server/compare/v17.1.0...v17.1.1) (2021-10-12)
 
 
