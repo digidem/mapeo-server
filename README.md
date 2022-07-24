@@ -286,39 +286,45 @@ stream.on('data', function (data) {
 ## Usage
 
 ```js
-var osmdb = require('kappa-osm')
-var kappa = require('kappa-core')
-var raf = require('random-access-file')
-var level = require('level')
-var blobstore = require('safe-fs-blob-store')
-var Router = require('mapeo-server')
+const path = require("path");
+const osmdb = require("kappa-osm");
+const kappa = require("kappa-core");
+const RandomAccessFile = require("random-access-file");
+const { Level } = require("level");
+const blobstore = require("safe-fs-blob-store");
+const Router = require("mapeo-server");
+const dir = __dirname;
 
-var osm = osmdb({
-  core: kappa('./db', {valueEncoding: 'json'}),
-  index: level('./index')),
+const osm = osmdb({
+  core: kappa("./db", { valueEncoding: "json" }),
+  index: new Level("./index"),
   storage: function (name, cb) {
-    process.nextTick(cb, null, raf(path.join(dir, 'storage', name)))
-  }
-})
-var media = blobstore('./media')
+    process.nextTick(
+      cb,
+      null,
+      new RandomAccessFile(path.join(dir, "storage", name))
+    );
+  },
+});
+const media = blobstore("./media");
 
-var root = '/path/to/my/static/files' // optional
-var route = Router(osm, media, {staticRoot: root})
+const root = "/path/to/my/static/files"; // optional
+const route = Router(osm, media, { staticRoot: root });
 
-var http = require('http')
-var server = http.createServer(function (req, res) {
-  var fn = route.handle(req, res)
+const http = require("http");
+const server = http.createServer(function (req, res) {
+  const fn = route.handle(req, res);
   if (fn) {
-    fn()
+    fn();
   } else {
-    res.statusCode = 404
-    res.end('not found\n')
+    res.statusCode = 404;
+    res.end("not found\n");
   }
-})
-server.listen(5000)
-server.on('close', function () {
-  route.api.close()
-})
+});
+server.listen(5000);
+server.on("close", function () {
+  route.api.close();
+});
 ```
 
 ### Use as Express middleware
